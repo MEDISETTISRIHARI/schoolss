@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start PostgreSQL and Redis
+        run: docker compose up -d
+
+      - name: Wait for PostgreSQL
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          pg_isready -h localhost -p 5432 -U school
+
+      - name: Wait for Redis
+        run: |
+          sudo apt-get update && sudo apt-get install -y redis-tools
+          redis-cli -h localhost ping
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Run typecheck
+        run: pnpm typecheck
+
+      - name: Run lint
+        run: pnpm lint
+        continue-on-error: true
+
+      - name: Run tests
+        run: pnpm test
+        env:
+          DATABASE_URL: postgresql://school:school@localhost:5432/school_management?schema=public
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Run database migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://school:school@localhost:5432/school_management?schema=public
+
+      - name: Stop services
+        if: always()
+        run: docker compose down

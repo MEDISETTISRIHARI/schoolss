@@ -1,0 +1,25 @@
+{
+  "name": "@school-management/database",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "db:generate": "prisma migrate dev --name init",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
+    "build": "prisma generate",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "prisma": "^5.14.0",
+    "@prisma/client": "^5.14.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0"
+  }
+}
