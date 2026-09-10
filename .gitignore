@@ -45,3 +45,5 @@ coverage
 
 # Local SQLite database
 packages/database/prisma/dev.db
+.vercel
+.env*
