@@ -42,3 +42,6 @@ coverage
 
 # Turborepo
 .turbo
+
+# Local SQLite database
+packages/database/prisma/dev.db
