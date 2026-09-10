@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const ExaminationTypeSchema = z.enum(['UNIT_TEST', 'MID_TERM', 'FINAL', 'ASSIGNMENT', 'PROJECT']);
+export const ExaminationTypeValues = ['UNIT_TEST', 'MID_TERM', 'FINAL', 'ASSIGNMENT', 'PROJECT'] as const;
 
 export const ExaminationSchema = z.object({
   id: z.string(),

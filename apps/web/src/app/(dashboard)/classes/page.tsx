@@ -49,15 +49,25 @@ export default function ClassesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateClass }) => {
-      const response = await api.patch(`/classes/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateClass }) => {
+       const response = await api.patch(`/classes/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
-      setEditingClass(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['classes'] });
+       setEditingClass(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/classes/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['classes'] });
+     },
+   });
 
   const {
     register,
@@ -83,7 +93,7 @@ export default function ClassesPage() {
 
   const onUpdate = (data: UpdateClass) => {
     if (editingClass) {
-      updateMutation.mutate({ id: editingClass.id, data }, { onSuccess: () => resetEdit() });
+       updateMutation.mutate({ publicId: editingClass.publicId, data }, { onSuccess: () => resetEdit() });
     }
   };
 
@@ -214,7 +224,7 @@ export default function ClassesPage() {
           </Card>
         ) : (
           classes?.map((cls) => (
-            <Card key={cls.id}>
+            <Card key={cls.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{cls.name}</h3>
@@ -222,11 +232,14 @@ export default function ClassesPage() {
                   <p className="text-sm text-gray-500">Academic Year: {cls.academicYearId}</p>
                   {cls.description && <p className="text-sm text-gray-500 mt-1">{cls.description}</p>}
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingClass(cls)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(cls.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingClass(cls)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -235,3 +248,5 @@ export default function ClassesPage() {
     </div>
   );
 }
+
+

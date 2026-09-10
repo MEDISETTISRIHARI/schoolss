@@ -36,7 +36,6 @@ if (typeof window !== 'undefined') {
         const refreshToken = useAuthStore.getState().refreshToken;
         if (!refreshToken) {
           useAuthStore.getState().logout();
-          window.location.href = '/login';
           return Promise.reject(error);
         }
 
@@ -49,7 +48,6 @@ if (typeof window !== 'undefined') {
           return api(originalRequest);
         } catch {
           useAuthStore.getState().logout();
-          window.location.href = '/login';
           return Promise.reject(error);
         }
       }

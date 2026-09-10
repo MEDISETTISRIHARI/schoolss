@@ -3,7 +3,7 @@ import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditLogService } from '../audit/audit.service';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 type SettingsMap = Record<string, unknown>;
 

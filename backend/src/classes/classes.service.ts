@@ -3,7 +3,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditLogService } from '../audit/audit.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 @Injectable()
 export class ClassesService {

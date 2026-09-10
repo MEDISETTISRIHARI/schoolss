@@ -15,7 +15,7 @@ import { QueryHomeworkDto } from './dto/query-homework.dto';
 import { RequirePermissions } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CurrentUserId } from '../common/decorators/current-user.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 interface RequestUser {
   sub: string;

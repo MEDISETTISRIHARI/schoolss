@@ -13,7 +13,7 @@ import {
   type UpdateAward,
   type AwardType,
 } from '@school-management/shared-types';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Award } from '@prisma/client';
 
 const awardTypes: AwardType[] = ['ACADEMIC', 'SPORTS', 'CULTURAL', 'ATTENDANCE', 'OTHER'];
@@ -52,15 +52,25 @@ export default function AwardsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateAward }) => {
-      const response = await api.patch(`/awards/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateAward }) => {
+       const response = await api.patch(`/awards/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['awards'] });
-      setEditingAward(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['awards'] });
+       setEditingAward(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/awards/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['awards'] });
+     },
+   });
 
   const {
     register,
@@ -86,7 +96,7 @@ export default function AwardsPage() {
 
   const onUpdate = (data: UpdateAward) => {
     if (editingAward) {
-      updateMutation.mutate({ id: editingAward.id, data });
+       updateMutation.mutate({ publicId: editingAward.publicId, data });
     }
   };
 
@@ -299,7 +309,7 @@ export default function AwardsPage() {
           </Card>
         ) : (
           awards?.map((award) => (
-            <Card key={award.id}>
+            <Card key={award.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{award.title}</h3>
@@ -312,11 +322,14 @@ export default function AwardsPage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingAward(award)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(award.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingAward(award)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -325,3 +338,5 @@ export default function AwardsPage() {
     </div>
   );
 }
+
+

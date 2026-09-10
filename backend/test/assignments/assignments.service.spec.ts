@@ -3,7 +3,7 @@ import { ForbiddenException, NotFoundException, BadRequestException, ConflictExc
 import { AssignmentsService, AssignmentRequester } from '../../src/assignments/assignments.service';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 import { AuditLogService } from '../../src/audit/audit.service';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 describe('AssignmentsService', () => {
   let service: AssignmentsService;

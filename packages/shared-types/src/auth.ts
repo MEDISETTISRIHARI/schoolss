@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 export const UserRoleSchema = z.enum(['SUPER_ADMIN', 'PRINCIPAL', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT']);
+export const UserRoleValues = ['SUPER_ADMIN', 'PRINCIPAL', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'] as const;
 export const UserStatusSchema = z.enum(['ACTIVE', 'SUSPENDED', 'ARCHIVED']);
+export const UserStatusValues = ['ACTIVE', 'SUSPENDED', 'ARCHIVED'] as const;
 
 export const UserSchema = z.object({
   id: z.string(),

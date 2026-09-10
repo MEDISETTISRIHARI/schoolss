@@ -16,8 +16,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "prisma": "^5.14.0",
-    "@prisma/client": "^5.14.0"
+    "prisma": "5.22.0",
+    "@prisma/client": "5.22.0"
   },
   "devDependencies": {
     "tsx": "^4.7.0"

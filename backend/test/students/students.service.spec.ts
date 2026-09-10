@@ -3,7 +3,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { StudentsService } from '../../src/students/students.service';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 import { AuditLogService } from '../../src/audit/audit.service';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 describe('StudentsService', () => {
   let service: StudentsService;
@@ -158,6 +158,21 @@ describe('StudentsService', () => {
   });
 
   describe('findAll', () => {
+    const userSelect = {
+      id: true,
+      publicId: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      profileImageUrl: true,
+      role: true,
+      status: true,
+      schoolId: true,
+      createdAt: true,
+      updatedAt: true,
+    };
+
     it('should return all students for SUPER_ADMIN', async () => {
       prismaService.student.findMany.mockResolvedValue([mockStudent]);
 
@@ -165,7 +180,7 @@ describe('StudentsService', () => {
 
       expect(prismaService.student.findMany).toHaveBeenCalledWith({
         where: { deletedAt: null },
-        include: { user: true },
+        include: { user: { select: userSelect } },
         orderBy: { createdAt: 'desc' },
       });
       expect(result).toEqual([mockStudent]);
@@ -181,7 +196,7 @@ describe('StudentsService', () => {
           deletedAt: null,
           user: { schoolId: 'school-1' },
         },
-        include: { user: true },
+        include: { user: { select: userSelect } },
         orderBy: { createdAt: 'desc' },
       });
       expect(result).toEqual([mockStudent]);

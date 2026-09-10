@@ -14,7 +14,7 @@ import { UpdateExaminationDto } from './dto/update-examination.dto';
 import { QueryExaminationDto } from './dto/query-examination.dto';
 import { RequirePermissions } from '../common/decorators/roles.decorator';
 import { CurrentUser, CurrentUserId } from '../common/decorators/current-user.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 interface RequestUser {
   sub: string;

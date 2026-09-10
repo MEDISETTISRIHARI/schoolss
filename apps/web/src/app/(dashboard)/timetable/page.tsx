@@ -12,7 +12,7 @@ import {
   type CreateTimetableEntry,
   type UpdateTimetableEntry,
 } from '@school-management/shared-types';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { TimetableEntry } from '@prisma/client';
 
 const daysOfWeek = [
@@ -44,7 +44,6 @@ export default function TimetablePage() {
       const { data } = await api.get('/classes');
       return data;
     },
-    enabled: isCreating || !!editingEntry,
   });
 
   const { data: sections } = useQuery({
@@ -53,7 +52,6 @@ export default function TimetablePage() {
       const { data } = await api.get('/sections');
       return data;
     },
-    enabled: isCreating || !!editingEntry,
   });
 
   const { data: subjects } = useQuery({
@@ -62,7 +60,6 @@ export default function TimetablePage() {
       const { data } = await api.get('/subjects');
       return data;
     },
-    enabled: isCreating || !!editingEntry,
   });
 
   const { data: teachers } = useQuery({
@@ -71,7 +68,6 @@ export default function TimetablePage() {
       const { data } = await api.get('/teachers');
       return data;
     },
-    enabled: isCreating || !!editingEntry,
   });
 
   const { data: academicYears } = useQuery({
@@ -80,8 +76,11 @@ export default function TimetablePage() {
       const { data } = await api.get('/academic-years');
       return data;
     },
-    enabled: isCreating || !!editingEntry,
   });
+
+  const classMap = new Map((classes as any[])?.map((c) => [c.id, c.name]) || []);
+  const subjectMap = new Map((subjects as any[])?.map((s) => [s.id, s.name]) || []);
+  const teacherMap = new Map((teachers as any[])?.map((t) => [t.id, t.user ? `${t.user.firstName} ${t.user.lastName}` : t.employeeId]) || []);
 
   const createMutation = useMutation({
     mutationFn: async (newEntry: CreateTimetableEntry) => {
@@ -95,15 +94,25 @@ export default function TimetablePage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateTimetableEntry }) => {
-      const response = await api.patch(`/timetable/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateTimetableEntry }) => {
+       const response = await api.patch(`/timetable/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['timetable'] });
-      setEditingEntry(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['timetable'] });
+       setEditingEntry(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/timetable/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['timetable'] });
+     },
+   });
 
   const {
     register,
@@ -129,7 +138,7 @@ export default function TimetablePage() {
 
   const onUpdate = (data: UpdateTimetableEntry) => {
     if (editingEntry) {
-      updateMutation.mutate({ id: editingEntry.id, data });
+       updateMutation.mutate({ publicId: editingEntry.publicId, data });
     }
   };
 
@@ -423,14 +432,14 @@ export default function TimetablePage() {
           </Card>
         ) : (
           timetableEntries?.map((entry) => (
-            <Card key={entry.id}>
+            <Card key={entry.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
                     {daysOfWeek.find((d) => d.value === entry.dayOfWeek)?.label || entry.dayOfWeek}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    Subject: {entry.subjectId} · Teacher: {entry.teacherId} · Class: {entry.classId}
+                    Subject: {subjectMap.get(entry.subjectId) || entry.subjectId} · Teacher: {teacherMap.get(entry.teacherId) || entry.teacherId} · Class: {classMap.get(entry.classId) || entry.classId}
                   </p>
                   <p className="text-sm text-gray-500">
                     Start: {new Date(entry.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ·
@@ -440,11 +449,14 @@ export default function TimetablePage() {
                     <p className="text-sm text-gray-500">Room: {entry.roomNumber}</p>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingEntry(entry)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(entry.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingEntry(entry)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -453,3 +465,5 @@ export default function TimetablePage() {
     </div>
   );
 }
+
+

@@ -3,7 +3,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BrandingService } from '../../src/branding/branding.service';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 import { AuditLogService } from '../../src/audit/audit.service';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 describe('BrandingService', () => {
   let service: BrandingService;

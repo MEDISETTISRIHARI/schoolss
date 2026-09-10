@@ -18,11 +18,11 @@ import {
   type ChangeStatus,
 } from '@school-management/shared-types';
 import { Plus, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
-import { UserRole, UserStatus } from '@prisma/client';
+
 import type { User } from '@prisma/client';
 
-const roles: UserRole[] = ['SUPER_ADMIN', 'PRINCIPAL', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'];
-const statuses: UserStatus[] = ['ACTIVE', 'SUSPENDED', 'ARCHIVED'];
+const roles: ('SUPER_ADMIN' | 'PRINCIPAL' | 'SCHOOL_ADMIN' | 'TEACHER' | 'STUDENT')[] = ['SUPER_ADMIN', 'PRINCIPAL', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'];
+const statuses: ('ACTIVE' | 'SUSPENDED' | 'ARCHIVED')[] = ['ACTIVE', 'SUSPENDED', 'ARCHIVED'];
 
 export default function UsersPage() {
   const queryClient = useQueryClient();
@@ -51,8 +51,8 @@ export default function UsersPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateUser }) => {
-      const response = await api.patch(`/users/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateUser }) => {
+       const response = await api.patch(`/users/${publicId}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -62,8 +62,8 @@ export default function UsersPage() {
   });
 
   const roleMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: ChangeRole }) => {
-      const response = await api.patch(`/users/${id}/role`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: ChangeRole }) => {
+       const response = await api.patch(`/users/${publicId}/role`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -73,15 +73,25 @@ export default function UsersPage() {
   });
 
   const statusMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: ChangeStatus }) => {
-      const response = await api.patch(`/users/${id}/status`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: ChangeStatus }) => {
+       const response = await api.patch(`/users/${publicId}/status`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setChangingStatusUser(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['users'] });
+       setChangingStatusUser(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/users/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['users'] });
+     },
+   });
 
   const {
     register,
@@ -125,19 +135,19 @@ export default function UsersPage() {
 
   const onUpdate = (data: UpdateUser) => {
     if (editingUser) {
-      updateMutation.mutate({ id: editingUser.id, data }, { onSuccess: () => resetEdit() });
+       updateMutation.mutate({ publicId: editingUser.publicId, data }, { onSuccess: () => resetEdit() });
     }
   };
 
   const onRoleChange = (data: ChangeRole) => {
     if (changingRoleUser) {
-      roleMutation.mutate({ id: changingRoleUser.id, data }, { onSuccess: () => resetRole() });
+       roleMutation.mutate({ publicId: changingRoleUser.publicId, data }, { onSuccess: () => resetRole() });
     }
   };
 
   const onStatusChange = (data: ChangeStatus) => {
     if (changingStatusUser) {
-      statusMutation.mutate({ id: changingStatusUser.id, data }, { onSuccess: () => resetStatus() });
+       statusMutation.mutate({ publicId: changingStatusUser.publicId, data }, { onSuccess: () => resetStatus() });
     }
   };
 
@@ -315,7 +325,7 @@ export default function UsersPage() {
           </Card>
         ) : (
           users?.map((user) => (
-            <Card key={user.id}>
+            <Card key={user.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{user.firstName} {user.lastName}</h3>
@@ -329,17 +339,20 @@ export default function UsersPage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingUser(user)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="secondary" onClick={() => setChangingRoleUser(user)}>
-                    <UserCheck className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="secondary" onClick={() => setChangingStatusUser(user)}>
-                    <UserX className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(user.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingUser(user)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setChangingRoleUser(user)}>
+                     <UserCheck className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setChangingStatusUser(user)}>
+                     <UserX className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -348,3 +361,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
+

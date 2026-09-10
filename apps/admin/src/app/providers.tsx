@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -17,20 +18,19 @@ function makeQueryClient() {
 
 let clientQueryClient: QueryClient | undefined = undefined;
 
-function getQueryClient() {
-  if (typeof window === 'undefined') {
-    return clientQueryClient ??= makeQueryClient();
-  } else {
-    return makeQueryClient();
-  }
-}
-
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
+  const [queryClient] = useState(() => {
+    if (typeof window === 'undefined') {
+      return clientQueryClient ??= makeQueryClient();
+    }
+    return makeQueryClient();
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <Suspense fallback={null}>
+        {children}
+      </Suspense>
     </QueryClientProvider>
   );
 }

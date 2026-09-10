@@ -6,15 +6,15 @@ import {
   MaxLength,
   IsDateString,
 } from 'class-validator';
-import { AwardType } from '@prisma/client';
+import { AwardType, AwardTypeValues } from '@school-management/shared-types';
 
 export class CreateAwardDto {
   @IsString()
   @IsNotEmpty()
   studentId!: string;
 
-  @IsEnum(AwardType)
-  type!: AwardType;
+@IsEnum([...AwardTypeValues] as const)
+   type!: AwardType;
 
   @IsString()
   @IsNotEmpty()

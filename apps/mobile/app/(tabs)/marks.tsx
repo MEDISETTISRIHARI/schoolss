@@ -19,9 +19,9 @@ export default function MarksScreen() {
   const { user } = useAuthStore();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['mobile-results'],
+    queryKey: ['mobile-marks'],
     queryFn: async () => {
-      const { data } = await api.get('/results/my');
+      const { data } = await api.get('/marks/my');
       return data as ResultRow[];
     },
     enabled: !!user && user.role === 'STUDENT',

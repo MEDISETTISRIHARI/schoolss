@@ -6,7 +6,7 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 export default function ProfileScreen() {
   const { user } = useAuthStore();
 
-  const { data: userProfile, isLoading } = useQuery({
+  const { data: userProfile, isLoading, error } = useQuery({
     queryKey: ['mobile-profile'],
     queryFn: async () => {
       const { data } = await api.get('/users/me');
@@ -14,6 +14,15 @@ export default function ProfileScreen() {
     },
     enabled: !!user,
   });
+
+  if (error) {
+    return (
+      <ScrollView style={{ flex: 1, backgroundColor: '#f9fafb', padding: 16 }}>
+        <Text style={{ marginBottom: 16, fontSize: 24, fontWeight: 'bold', color: '#111827' }}>Profile</Text>
+        <Text style={{ color: '#dc2626' }}>Failed to load profile</Text>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f9fafb', padding: 16 }}>

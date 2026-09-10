@@ -3,7 +3,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditLogService } from '../audit/audit.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 export interface CertificatesRequester {
   role: UserRole;

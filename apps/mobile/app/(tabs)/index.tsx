@@ -6,17 +6,25 @@ export default function HomeScreen() {
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ['mobile-dashboard-stats'],
     queryFn: async () => {
-      const [schoolsRes, usersRes] = await Promise.all([
-        api.get('/schools'),
-        api.get('/users'),
-      ]);
-      const schools = schoolsRes.data;
-      const users = usersRes.data;
+      let schools: Array<Record<string, unknown>> = [];
+      let users: Array<Record<string, unknown>> = [];
+      try {
+        const schoolsRes = await api.get('/schools');
+        schools = schoolsRes.data;
+      } catch (e) {
+        console.warn('Failed to load schools for dashboard stats', e);
+      }
+      try {
+        const usersRes = await api.get('/users');
+        users = usersRes.data;
+      } catch (e) {
+        console.warn('Failed to load users for dashboard stats', e);
+      }
       return {
         totalSchools: schools.length,
         totalUsers: users.length,
-        totalStudents: users.filter((u: unknown) => (u as { role: string }).role === 'STUDENT').length,
-        totalTeachers: users.filter((u: unknown) => (u as { role: string }).role === 'TEACHER').length,
+        totalStudents: users.filter((u) => u.role === 'STUDENT').length,
+        totalTeachers: users.filter((u) => u.role === 'TEACHER').length,
       };
     },
   });

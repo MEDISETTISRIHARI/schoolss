@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
-import { AwardType } from '@prisma/client';
+import { AwardType, AwardTypeValues } from '@school-management/shared-types';
 
 export class AwardFiltersDto {
   @IsOptional()
@@ -7,8 +7,8 @@ export class AwardFiltersDto {
   studentId?: string;
 
   @IsOptional()
-  @IsEnum(AwardType)
-  type?: AwardType;
+@IsEnum([...AwardTypeValues] as const)
+   type?: AwardType;
 
   @IsOptional()
   @IsString()

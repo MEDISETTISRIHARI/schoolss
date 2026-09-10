@@ -8,7 +8,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { AttendanceStatus } from '@prisma/client';
+import { AttendanceStatus, AttendanceStatusValues } from '@school-management/shared-types';
 
 export class QueryAttendanceDto {
   @IsOptional()
@@ -40,8 +40,8 @@ export class QueryAttendanceDto {
   academicYearId?: string;
 
   @IsOptional()
-  @IsEnum(AttendanceStatus)
-  status?: AttendanceStatus;
+@IsEnum([...AttendanceStatusValues] as const)
+   status?: AttendanceStatus;
 
   @IsOptional()
   @IsDateString()

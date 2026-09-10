@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const AwardTypeSchema = z.enum(['ACADEMIC', 'SPORTS', 'CULTURAL', 'ATTENDANCE', 'OTHER']);
+export const AwardTypeValues = ['ACADEMIC', 'SPORTS', 'CULTURAL', 'ATTENDANCE', 'OTHER'] as const;
 
 export const AwardSchema = z.object({
   id: z.string(),

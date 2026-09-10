@@ -4,7 +4,7 @@ import { AuditLogService } from '../audit/audit.service';
 import { CreateTimetableEntryDto } from './dto/create-timetable-entry.dto';
 import { UpdateTimetableEntryDto } from './dto/update-timetable-entry.dto';
 import { QueryTimetableDto } from './dto/query-timetable.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 export interface TimetableRequester {
   role: UserRole;
@@ -48,7 +48,7 @@ export class TimetableService {
     }
 
     if (dto.sectionId) {
-      const sectionWhere: any = { id: dto.sectionId, schoolId, deletedAt: null };
+      const sectionWhere: Record<string, unknown> = { id: dto.sectionId, schoolId, deletedAt: null };
       if (dto.classId) {
         sectionWhere.classId = dto.classId;
       }
@@ -150,8 +150,8 @@ export class TimetableService {
       });
 
       return timetableEntry;
-    } catch (error: any) {
-      if (error.code === 'P2002') {
+    } catch (error) {
+      if (error instanceof Object && 'code' in error && error.code === 'P2002') {
         throw new ConflictException('Timetable slot already exists');
       }
       throw error;
@@ -159,7 +159,7 @@ export class TimetableService {
   }
 
   async findAll(requester: TimetableRequester, filters: QueryTimetableDto) {
-    const where: any = { deletedAt: null };
+    const where: Record<string, unknown> = { deletedAt: null };
 
     if (requester.role === 'SUPER_ADMIN') {
       if (filters.schoolId) {
@@ -286,7 +286,7 @@ export class TimetableService {
 
     await this.validateRelatedEntities(timetableEntry.schoolId, updateTimetableEntryDto);
 
-    const data: any = { ...updateTimetableEntryDto };
+    const data: Record<string, unknown> = { ...updateTimetableEntryDto };
     delete data.schoolId;
 
     if (data.startTime) {
@@ -359,7 +359,7 @@ export class TimetableService {
     return removed;
   }
 
-  private async canAccessTimetable(entity: any, requester: TimetableRequester): Promise<boolean> {
+  private async canAccessTimetable(entity: Record<string, unknown>, requester: TimetableRequester): Promise<boolean> {
     if (requester.role === 'SUPER_ADMIN') {
       if (requester.schoolId && entity.schoolId !== requester.schoolId) {
         return false;

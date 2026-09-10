@@ -12,9 +12,18 @@ import {
   type CreateExamination,
   type UpdateExamination,
 } from '@school-management/shared-types';
-import { Plus, Pencil, Trash2, Copy, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Examination } from '@prisma/client';
-import { ExaminationType } from '@prisma/client';
+
+const ExaminationType = {
+  MID_TERM: 'MID_TERM',
+  FINAL: 'FINAL',
+  QUIZ: 'QUIZ',
+  ASSIGNMENT: 'ASSIGNMENT',
+  PROJECT: 'PROJECT',
+  PRACTICAL: 'PRACTICAL',
+  ORAL: 'ORAL',
+};
 import { useAuthStore } from '@/lib/stores/auth-store';
 
 export default function ExaminationsPage() {
@@ -90,15 +99,25 @@ export default function ExaminationsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateExamination }) => {
-      const response = await api.patch(`/examinations/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateExamination }) => {
+       const response = await api.patch(`/examinations/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['examinations'] });
-      setEditingExam(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['examinations'] });
+       setEditingExam(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/examinations/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['examinations'] });
+     },
+   });
 
   const {
     register,
@@ -124,7 +143,7 @@ export default function ExaminationsPage() {
 
   const onUpdate = (data: UpdateExamination) => {
     if (editingExam) {
-      updateMutation.mutate({ id: editingExam.id, data });
+       updateMutation.mutate({ publicId: editingExam.publicId, data });
     }
   };
 
@@ -470,7 +489,7 @@ export default function ExaminationsPage() {
           </Card>
         ) : (
           examinations?.map((exam) => (
-            <Card key={exam.id}>
+            <Card key={exam.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{exam.name}</h3>
@@ -496,11 +515,14 @@ export default function ExaminationsPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingExam(exam)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(exam.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingExam(exam)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -509,3 +531,5 @@ export default function ExaminationsPage() {
     </div>
   );
 }
+
+

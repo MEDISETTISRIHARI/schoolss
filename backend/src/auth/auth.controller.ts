@@ -4,9 +4,9 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { GetAvailableRolesDto } from './dto/get-available-roles.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from '../common/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -23,8 +23,8 @@ export class AuthController {
 
   @Post('roles')
   @Public()
-  getAvailableRoles(@Body('role') role: string) {
-    return { availableRoles: this.authService.getAvailableRoles(role as UserRole) };
+  getAvailableRoles(@Body() getAvailableRolesDto: GetAvailableRolesDto) {
+    return { availableRoles: this.authService.getAvailableRoles(getAvailableRolesDto.role) };
   }
 
   @Post('refresh')

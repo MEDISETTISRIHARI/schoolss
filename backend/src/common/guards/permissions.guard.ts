@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 import { PERMISSIONS_KEY, ROLES_KEY, PUBLIC_KEY } from '../decorators/roles.decorator';
 
 @Injectable()

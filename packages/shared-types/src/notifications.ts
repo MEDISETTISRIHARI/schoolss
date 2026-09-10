@@ -10,6 +10,15 @@ export const NotificationTypeSchema = z.enum([
   'AWARD',
   'GENERAL',
 ]);
+export const NotificationTypeValues = [
+  'ANNOUNCEMENT',
+  'HOMEWORK',
+  'EXAMINATION',
+  'RESULT',
+  'ATTENDANCE',
+  'AWARD',
+  'GENERAL',
+] as const;
 
 export const NotificationSchema = z.object({
   id: z.string(),

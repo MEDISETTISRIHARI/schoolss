@@ -9,11 +9,11 @@ import {
   IsArray,
   IsObject,
 } from 'class-validator';
-import { NotificationType } from '@prisma/client';
+import { NotificationType, NotificationTypeValues } from '@school-management/shared-types';
 
 export class CreateNotificationDto {
-  @IsEnum(NotificationType)
-  type!: NotificationType;
+@IsEnum([...NotificationTypeValues] as const)
+   type!: NotificationType;
 
   @IsString()
   @IsNotEmpty()

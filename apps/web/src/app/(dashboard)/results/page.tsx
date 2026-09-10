@@ -12,11 +12,11 @@ import {
   type CreateResult,
   type UpdateResult,
 } from '@school-management/shared-types';
-import { Plus, Pencil } from 'lucide-react';
-import { ResultStatus } from '@prisma/client';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+
 import type { Result } from '@prisma/client';
 
-const resultStatuses: ResultStatus[] = ['DRAFT', 'PUBLISHED', 'FINALIZED'];
+const resultStatuses: ('DRAFT' | 'PUBLISHED' | 'FINALIZED')[] = ['DRAFT', 'PUBLISHED', 'FINALIZED'];
 
 export default function ResultsPage() {
   const queryClient = useQueryClient();
@@ -37,7 +37,6 @@ export default function ResultsPage() {
       const { data } = await api.get('/examinations');
       return data;
     },
-    enabled: isCreating || !!editingResult,
   });
 
   const { data: students } = useQuery({
@@ -46,7 +45,6 @@ export default function ResultsPage() {
       const { data } = await api.get('/students');
       return data;
     },
-    enabled: isCreating || !!editingResult,
   });
 
   const { data: classes } = useQuery({
@@ -55,7 +53,6 @@ export default function ResultsPage() {
       const { data } = await api.get('/classes');
       return data;
     },
-    enabled: isCreating || !!editingResult,
   });
 
   const { data: sections } = useQuery({
@@ -64,7 +61,6 @@ export default function ResultsPage() {
       const { data } = await api.get('/sections');
       return data;
     },
-    enabled: isCreating || !!editingResult,
   });
 
   const { data: academicYears } = useQuery({
@@ -73,8 +69,11 @@ export default function ResultsPage() {
       const { data } = await api.get('/academic-years');
       return data;
     },
-    enabled: isCreating || !!editingResult,
   });
+
+  const studentMap = new Map((students as any[])?.map((s) => [s.id, s.user ? `${s.user.firstName} ${s.user.lastName}` : s.admissionNumber]) || []);
+  const classMap = new Map((classes as any[])?.map((c) => [c.id, c.name]) || []);
+  const academicYearMap = new Map((academicYears as any[])?.map((ay) => [ay.id, ay.name]) || []);
 
   const createMutation = useMutation({
     mutationFn: async (newResult: CreateResult) => {
@@ -88,8 +87,8 @@ export default function ResultsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateResult }) => {
-      const response = await api.patch(`/results/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateResult }) => {
+       const response = await api.patch(`/results/${publicId}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -99,14 +98,24 @@ export default function ResultsPage() {
   });
 
   const approveMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await api.patch(`/results/${id}/approve`);
+     mutationFn: async (publicId: string) => {
+       const response = await api.patch(`/results/${publicId}/approve`);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['results'] });
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['results'] });
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/results/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['results'] });
+     },
+   });
 
   const {
     register,
@@ -132,7 +141,7 @@ export default function ResultsPage() {
 
   const onUpdate = (data: UpdateResult) => {
     if (editingResult) {
-      updateMutation.mutate({ id: editingResult.id, data });
+       updateMutation.mutate({ publicId: editingResult.publicId, data });
     }
   };
 
@@ -506,12 +515,12 @@ export default function ResultsPage() {
           </Card>
         ) : (
           results?.map((result) => (
-            <Card key={result.id}>
+            <Card key={result.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{result.studentId}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{studentMap.get(result.studentId) || result.studentId}</h3>
                   <p className="text-sm text-gray-500">
-                    Class: {result.classId} · Academic Year: {result.academicYearId}
+                    Class: {classMap.get(result.classId) || result.classId} · Academic Year: {academicYearMap.get(result.academicYearId) || result.academicYearId}
                   </p>
                   <div className="flex gap-2 mt-1">
                     <span className="inline-flex rounded-full px-2 text-xs font-semibold leading-5 bg-blue-100 text-blue-800">
@@ -536,21 +545,24 @@ export default function ResultsPage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  {result.status !== 'FINALIZED' && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => approveMutation.mutate(result.id)}
-                      disabled={approveMutation.isPending}
-                    >
-                      {approveMutation.isPending ? '...' : 'Approve'}
-                    </Button>
-                  )}
-                  <Button size="sm" variant="secondary" onClick={() => setEditingResult(result)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   {result.status !== 'FINALIZED' && (
+                     <Button
+                       size="sm"
+                       variant="secondary"
+                       onClick={() => approveMutation.mutate(result.publicId)}
+                       disabled={approveMutation.isPending}
+                     >
+                       {approveMutation.isPending ? '...' : 'Approve'}
+                     </Button>
+                   )}
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(result.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingResult(result)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -559,3 +571,5 @@ export default function ResultsPage() {
     </div>
   );
 }
+
+

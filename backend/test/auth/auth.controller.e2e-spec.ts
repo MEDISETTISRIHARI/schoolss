@@ -16,7 +16,7 @@ import { AuditLogService } from '../../src/audit/audit.service';
 import { ResponseInterceptor } from '../../src/common/interceptors/response.interceptor';
 import { AllExceptionsFilter } from '../../src/common/filters/http-exception.filter';
 import { Reflector } from '@nestjs/core';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;

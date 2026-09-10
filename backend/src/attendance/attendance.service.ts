@@ -11,7 +11,7 @@ import { AuditLogService } from '../audit/audit.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { QueryAttendanceDto } from './dto/query-attendance.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 @Injectable()
 export class AttendanceService {

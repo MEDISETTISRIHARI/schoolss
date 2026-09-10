@@ -12,7 +12,7 @@ import {
   LogOut,
   Menu,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -29,6 +29,23 @@ export default function AdminLayout({
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !user) {
+      router.push('/login');
+    }
+  }, [mounted, user, router]);
+
+  useEffect(() => {
+    if (mounted && user && user.role !== 'SUPER_ADMIN') {
+      router.push('/dashboard');
+    }
+  }, [mounted, user, router]);
 
   const handleLogout = async () => {
     try {
@@ -43,13 +60,7 @@ export default function AdminLayout({
     }
   };
 
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
-
-  if (user.role !== 'SUPER_ADMIN') {
-    router.push('/dashboard');
+  if (!mounted || !user || user.role !== 'SUPER_ADMIN') {
     return null;
   }
 

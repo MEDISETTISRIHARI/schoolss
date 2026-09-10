@@ -1,10 +1,10 @@
-import { Injectable, ForbiddenException, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditLogService } from '../audit/audit.service';
 import { CreateBackupRecordDto } from './dto/create-backup-record.dto';
 import { UpdateBackupRecordDto } from './dto/update-backup-record.dto';
 import { BackupFiltersDto } from './dto/backup-filters.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 export interface BackupRequester {
   role: UserRole;
@@ -54,7 +54,7 @@ export class BackupService {
   }
 
   async findAll(requester: BackupRequester, filters: BackupFiltersDto) {
-    const where: any = { deletedAt: null };
+    const where: Record<string, unknown> = { deletedAt: null };
 
     if (requester.role === 'SUPER_ADMIN') {
       if (filters.schoolId) {

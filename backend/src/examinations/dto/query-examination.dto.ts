@@ -8,7 +8,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { ExaminationType } from '@prisma/client';
+import { ExaminationType, ExaminationTypeValues } from '@school-management/shared-types';
 
 export class QueryExaminationDto {
   @IsOptional()
@@ -36,8 +36,8 @@ export class QueryExaminationDto {
   teacherId?: string;
 
   @IsOptional()
-  @IsEnum(ExaminationType)
-  type?: ExaminationType;
+@IsEnum([...ExaminationTypeValues] as const)
+   type?: ExaminationType;
 
   @IsOptional()
   @IsDateString()

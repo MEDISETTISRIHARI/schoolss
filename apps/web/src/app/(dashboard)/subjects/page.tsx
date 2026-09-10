@@ -40,15 +40,25 @@ export default function SubjectsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateSubject }) => {
-      const response = await api.patch(`/subjects/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateSubject }) => {
+       const response = await api.patch(`/subjects/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subjects'] });
-      setEditingSubject(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['subjects'] });
+       setEditingSubject(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/subjects/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['subjects'] });
+     },
+   });
 
   const {
     register,
@@ -74,7 +84,7 @@ export default function SubjectsPage() {
 
   const onUpdate = (data: UpdateSubject) => {
     if (editingSubject) {
-      updateMutation.mutate({ id: editingSubject.id, data }, { onSuccess: () => resetEdit() });
+       updateMutation.mutate({ publicId: editingSubject.publicId, data }, { onSuccess: () => resetEdit() });
     }
   };
 
@@ -180,7 +190,7 @@ export default function SubjectsPage() {
           </Card>
         ) : (
           subjects?.map((subject) => (
-            <Card key={subject.id}>
+            <Card key={subject.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{subject.name}</h3>
@@ -190,11 +200,14 @@ export default function SubjectsPage() {
                     {subject.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingSubject(subject)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(subject.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingSubject(subject)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -203,3 +216,5 @@ export default function SubjectsPage() {
     </div>
   );
 }
+
+

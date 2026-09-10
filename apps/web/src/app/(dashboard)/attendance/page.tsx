@@ -13,7 +13,7 @@ import {
   type UpdateAttendance,
   type AttendanceStatus,
 } from '@school-management/shared-types';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Attendance } from '@prisma/client';
 
 const attendanceStatuses: AttendanceStatus[] = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED'];
@@ -37,7 +37,6 @@ export default function AttendancePage() {
       const { data } = await api.get('/students');
       return data;
     },
-    enabled: isCreating || !!editingAttendance,
   });
 
   const { data: classes } = useQuery({
@@ -46,7 +45,6 @@ export default function AttendancePage() {
       const { data } = await api.get('/classes');
       return data;
     },
-    enabled: isCreating || !!editingAttendance,
   });
 
   const { data: sections } = useQuery({
@@ -55,7 +53,6 @@ export default function AttendancePage() {
       const { data } = await api.get('/sections');
       return data;
     },
-    enabled: isCreating || !!editingAttendance,
   });
 
   const { data: subjects } = useQuery({
@@ -64,7 +61,6 @@ export default function AttendancePage() {
       const { data } = await api.get('/subjects');
       return data;
     },
-    enabled: isCreating || !!editingAttendance,
   });
 
   const { data: teachers } = useQuery({
@@ -73,7 +69,6 @@ export default function AttendancePage() {
       const { data } = await api.get('/teachers');
       return data;
     },
-    enabled: isCreating || !!editingAttendance,
   });
 
   const { data: academicYears } = useQuery({
@@ -82,8 +77,12 @@ export default function AttendancePage() {
       const { data } = await api.get('/academic-years');
       return data;
     },
-    enabled: isCreating || !!editingAttendance,
   });
+
+  const studentMap = new Map((students as any[])?.map((s) => [s.id, s.user ? `${s.user.firstName} ${s.user.lastName}` : s.admissionNumber]) || []);
+  const classMap = new Map((classes as any[])?.map((c) => [c.id, c.name]) || []);
+  const subjectMap = new Map((subjects as any[])?.map((s) => [s.id, s.name]) || []);
+  const teacherMap = new Map((teachers as any[])?.map((t) => [t.id, t.user ? `${t.user.firstName} ${t.user.lastName}` : t.employeeId]) || []);
 
   const createMutation = useMutation({
     mutationFn: async (newAttendance: CreateAttendance) => {
@@ -97,15 +96,25 @@ export default function AttendancePage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateAttendance }) => {
-      const response = await api.patch(`/attendance/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateAttendance }) => {
+       const response = await api.patch(`/attendance/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance'] });
-      setEditingAttendance(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['attendance'] });
+       setEditingAttendance(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/attendance/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['attendance'] });
+     },
+   });
 
   const {
     register,
@@ -131,7 +140,7 @@ export default function AttendancePage() {
 
   const onUpdate = (data: UpdateAttendance) => {
     if (editingAttendance) {
-      updateMutation.mutate({ id: editingAttendance.id, data });
+       updateMutation.mutate({ publicId: editingAttendance.publicId, data });
     }
   };
 
@@ -438,12 +447,12 @@ export default function AttendancePage() {
           </Card>
         ) : (
           attendanceRecords?.map((record) => (
-            <Card key={record.id}>
+            <Card key={record.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{record.studentId}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{studentMap.get(record.studentId) || record.studentId}</h3>
                   <p className="text-sm text-gray-500">
-                    Class: {record.classId} · Date: {new Date(record.date).toLocaleDateString()}
+                    Class: {classMap.get(record.classId) || record.classId} · Date: {new Date(record.date).toLocaleDateString()}
                   </p>
                   <div className="flex gap-2 mt-1">
                     <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
@@ -464,16 +473,19 @@ export default function AttendancePage() {
                     )}
                     {record.subjectId && (
                       <span className="inline-flex rounded-full px-2 text-xs font-semibold leading-5 bg-purple-100 text-purple-800">
-                        {record.subjectId}
+                        {subjectMap.get(record.subjectId) || record.subjectId}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingAttendance(record)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(record.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingAttendance(record)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -482,3 +494,5 @@ export default function AttendancePage() {
     </div>
   );
 }
+
+

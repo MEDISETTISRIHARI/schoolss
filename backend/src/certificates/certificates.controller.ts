@@ -12,7 +12,7 @@ import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { RequirePermissions } from '../common/decorators/roles.decorator';
 import { CurrentUser, CurrentUserId } from '../common/decorators/current-user.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 interface RequestUser {
   sub: string;

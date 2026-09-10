@@ -3,7 +3,7 @@ import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { api } from '@/lib/api';
-import { Ionicons } from '@expo/vector-icons';
+
 
 type AttendanceRecord = {
   id: string;

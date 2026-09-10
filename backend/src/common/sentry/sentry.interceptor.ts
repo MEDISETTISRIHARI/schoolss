@@ -3,8 +3,6 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Catch,
-  ArgumentsHost,
   HttpException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';

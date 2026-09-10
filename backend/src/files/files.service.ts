@@ -1,10 +1,10 @@
-import { Injectable, ForbiddenException, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditLogService } from '../audit/audit.service';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
 import { FileFiltersDto } from './dto/file-filters.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 export interface FilesRequester {
   role: UserRole;
@@ -64,7 +64,7 @@ export class FilesService {
   }
 
   async findAll(requester: FilesRequester, filters: FileFiltersDto) {
-    const where: any = { deletedAt: null };
+    const where: Record<string, unknown> = { deletedAt: null };
 
     if (requester.role === 'SUPER_ADMIN') {
       if (filters.schoolId) {

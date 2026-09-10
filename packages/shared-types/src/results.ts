@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const ResultStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'FINALIZED']);
+export const ResultStatusValues = ['DRAFT', 'PUBLISHED', 'FINALIZED'] as const;
 
 export const ResultSchema = z.object({
   id: z.string(),

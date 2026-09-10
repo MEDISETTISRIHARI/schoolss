@@ -1,5 +1,5 @@
 import { IsEmail, IsString, IsOptional, MinLength, IsEnum, MaxLength, IsNotEmpty } from 'class-validator';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole, UserRoleValues, UserStatus, UserStatusValues } from '@school-management/shared-types';
 
 export class CreateUserDto {
   @IsEmail()
@@ -31,14 +31,14 @@ export class CreateUserDto {
   @MaxLength(500)
   profileImageUrl?: string;
 
-  @IsEnum(UserRole)
-  role!: UserRole;
+@IsEnum([...UserRoleValues] as const)
+   role!: UserRole;
 
   @IsOptional()
   @IsString()
   schoolId?: string;
 
-  @IsOptional()
-  @IsEnum(UserStatus)
-  status?: UserStatus;
+@IsOptional()
+   @IsEnum([...UserStatusValues] as const)
+   status?: UserStatus;
 }

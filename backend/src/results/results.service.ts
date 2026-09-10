@@ -11,7 +11,7 @@ import { AuditLogService } from '../audit/audit.service';
 import { CreateResultDto } from './dto/create-result.dto';
 import { UpdateResultDto } from './dto/update-result.dto';
 import { QueryResultDto } from './dto/query-result.dto';
-import { UserRole, ResultStatus } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 @Injectable()
 export class ResultsService {
@@ -66,7 +66,7 @@ export class ResultsService {
         data: {
           ...createResultDto,
           schoolId: targetSchoolId,
-          status: createResultDto.status ?? ResultStatus.DRAFT,
+          status: createResultDto.status ?? 'DRAFT',
         },
       });
 
@@ -202,7 +202,7 @@ export class ResultsService {
     const updated = await this.prisma.result.update({
       where: { id },
       data: {
-        status: ResultStatus.FINALIZED,
+        status: 'FINALIZED',
         finalizedAt: new Date(),
         finalizedBy: actorId,
       },

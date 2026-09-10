@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, MinLength, IsEnum, IsOptional } from 'class-validator';
-import { UserRole } from '@prisma/client';
+import { UserRole, UserRoleValues } from '@school-management/shared-types';
 
 export class LoginDto {
   @IsEmail()
@@ -10,6 +10,6 @@ export class LoginDto {
   password!: string;
 
   @IsOptional()
-  @IsEnum(UserRole)
-  selectedRole?: UserRole;
+@IsEnum([...UserRoleValues] as const)
+   selectedRole?: UserRole;
 }

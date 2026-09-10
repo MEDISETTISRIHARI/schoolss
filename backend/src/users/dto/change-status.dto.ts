@@ -1,8 +1,8 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { UserStatus } from '@prisma/client';
+import { UserStatus, UserStatusValues } from '@school-management/shared-types';
 
 export class ChangeStatusDto {
-  @IsEnum(UserStatus)
-  @IsNotEmpty()
-  status!: UserStatus;
+@IsEnum([...UserStatusValues] as const)
+   @IsNotEmpty()
+   status!: UserStatus;
 }

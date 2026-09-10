@@ -12,7 +12,7 @@ import {
   type CreateStudent,
   type UpdateStudent,
 } from '@school-management/shared-types';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Student, User } from '@prisma/client';
 
 type StudentWithUser = Student & {
@@ -53,15 +53,25 @@ export default function StudentsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateStudent }) => {
-      const response = await api.patch(`/students/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateStudent }) => {
+       const response = await api.patch(`/students/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['students'] });
-      setEditingStudent(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['students'] });
+       setEditingStudent(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/students/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['students'] });
+     },
+   });
 
   const {
     register,
@@ -87,7 +97,7 @@ export default function StudentsPage() {
 
   const onUpdate = (data: UpdateStudent) => {
     if (editingStudent) {
-      updateMutation.mutate({ id: editingStudent.id, data }, { onSuccess: () => resetEdit() });
+       updateMutation.mutate({ publicId: editingStudent.publicId, data }, { onSuccess: () => resetEdit() });
     }
   };
 
@@ -265,7 +275,7 @@ export default function StudentsPage() {
           </Card>
         ) : (
           students?.map((student) => (
-            <Card key={student.id}>
+            <Card key={student.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
@@ -276,11 +286,14 @@ export default function StudentsPage() {
                   <p className="text-sm text-gray-500">Guardian: {student.guardianName || 'N/A'}</p>
                   <p className="text-sm text-gray-500">Enrolled: {new Date(student.enrollmentDate).toLocaleDateString()}</p>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingStudent(student)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(student.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingStudent(student)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -289,3 +302,5 @@ export default function StudentsPage() {
     </div>
   );
 }
+
+

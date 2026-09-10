@@ -15,7 +15,7 @@ import { QueryTimetableDto } from './dto/query-timetable.dto';
 import { RequirePermissions } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CurrentUserId } from '../common/decorators/current-user.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 interface RequestUser {
   sub: string;
@@ -28,7 +28,7 @@ export class TimetableController {
   constructor(private readonly timetableService: TimetableService) {}
 
   @Post()
-  @RequirePermissions('timetable.view.assigned')
+  @RequirePermissions('timetable.manage')
   create(
     @CurrentUser() user: RequestUser,
     @CurrentUserId() actorId: string,
@@ -65,7 +65,7 @@ export class TimetableController {
   }
 
   @Patch(':publicId')
-  @RequirePermissions('timetable.view.assigned')
+  @RequirePermissions('timetable.manage')
   update(
     @CurrentUserId() actorId: string,
     @CurrentUser() user: RequestUser,
@@ -81,7 +81,7 @@ export class TimetableController {
   }
 
   @Delete(':publicId')
-  @RequirePermissions('timetable.view.assigned')
+  @RequirePermissions('timetable.manage')
   remove(@CurrentUserId() actorId: string, @CurrentUser() user: RequestUser, @Param('publicId') publicId: string) {
     const requester: TimetableRequester = {
       role: user.role,

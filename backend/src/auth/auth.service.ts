@@ -4,7 +4,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 export interface AuthenticatedUser {
   id: string;

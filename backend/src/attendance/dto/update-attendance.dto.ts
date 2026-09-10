@@ -6,7 +6,7 @@ import {
   IsBoolean,
   MaxLength,
 } from 'class-validator';
-import { AttendanceStatus } from '@prisma/client';
+import { AttendanceStatus, AttendanceStatusValues } from '@school-management/shared-types';
 
 export class UpdateAttendanceDto {
   @IsOptional()
@@ -38,8 +38,8 @@ export class UpdateAttendanceDto {
   date?: string;
 
   @IsOptional()
-  @IsEnum(AttendanceStatus)
-  status?: AttendanceStatus;
+@IsEnum([...AttendanceStatusValues] as const)
+   status?: AttendanceStatus;
 
   @IsOptional()
   @IsString()

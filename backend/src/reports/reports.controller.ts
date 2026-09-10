@@ -4,7 +4,7 @@ import { StudentReportDto } from './dto/student-report.dto';
 import { ClassReportDto } from './dto/class-report.dto';
 import { RequirePermissions } from '../common/decorators/roles.decorator';
 import { CurrentUser, CurrentUserId } from '../common/decorators/current-user.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 interface RequestUser {
   sub: string;
@@ -44,8 +44,8 @@ export class ReportsController {
 
   @Get('overview')
   @RequirePermissions('reports.view')
-  getSchoolAcademicOverview(@CurrentUser() user: RequestUser) {
-    return this.reportsService.getSchoolAcademicOverview({
+  getSchoolAcademicOverview(@CurrentUserId() actorId: string, @CurrentUser() user: RequestUser) {
+    return this.reportsService.getSchoolAcademicOverview(actorId, {
       role: user.role,
       schoolId: user.schoolId,
     });

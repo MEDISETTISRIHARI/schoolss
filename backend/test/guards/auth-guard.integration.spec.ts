@@ -6,7 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtAuthGuard } from '../../src/common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../src/common/guards/permissions.guard';
 import { TenantGuard } from '../../src/common/guards/tenant.guard';
-import { PrismaService } from '../../src/common/prisma/prisma.service';import { UserRole } from '@prisma/client';
+import { PrismaService } from '../../src/common/prisma/prisma.service';import { UserRole } from '@school-management/shared-types';
 
 const mockUser = {
   sub: 'user-1',

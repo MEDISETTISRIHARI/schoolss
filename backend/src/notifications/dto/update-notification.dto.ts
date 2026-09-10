@@ -8,12 +8,12 @@ import {
   IsArray,
   IsObject,
 } from 'class-validator';
-import { NotificationType } from '@prisma/client';
+import { NotificationType, NotificationTypeValues } from '@school-management/shared-types';
 
 export class UpdateNotificationDto {
   @IsOptional()
-  @IsEnum(NotificationType)
-  type?: NotificationType;
+@IsEnum([...NotificationTypeValues] as const)
+   type?: NotificationType;
 
   @IsOptional()
   @IsString()

@@ -9,7 +9,7 @@ import {
   Min,
   MaxLength,
 } from 'class-validator';
-import { ExaminationType } from '@prisma/client';
+import { ExaminationType, ExaminationTypeValues } from '@school-management/shared-types';
 
 export class CreateExaminationDto {
   @IsOptional()
@@ -41,8 +41,8 @@ export class CreateExaminationDto {
   @MaxLength(255)
   name!: string;
 
-  @IsEnum(ExaminationType)
-  type!: ExaminationType;
+@IsEnum([...ExaminationTypeValues] as const)
+   type!: ExaminationType;
 
   @IsDateString()
   date!: string;

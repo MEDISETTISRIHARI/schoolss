@@ -9,7 +9,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditLogService } from '../audit/audit.service';
 import { StudentReportDto } from './dto/student-report.dto';
 import { ClassReportDto } from './dto/class-report.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 export interface Requester {
   role: UserRole;
@@ -551,7 +551,7 @@ export class ReportsService {
     };
   }
 
-  async getSchoolAcademicOverview(requester: Requester) {
+  async getSchoolAcademicOverview(actorId: string, requester: Requester) {
     const schoolId = this.getTargetSchoolId(requester);
 
     const school = await this.prisma.school.findFirst({
@@ -596,6 +596,14 @@ export class ReportsService {
         },
       }),
     ]);
+
+    await this.auditLogService.create({
+      action: 'VIEW',
+      resourceType: 'SchoolAcademicOverview',
+      resourceId: schoolId,
+      actorId,
+      schoolId,
+    });
 
     return {
       school,

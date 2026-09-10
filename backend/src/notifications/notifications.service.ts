@@ -1,10 +1,11 @@
-import { Injectable, ForbiddenException, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditLogService } from '../audit/audit.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { NotificationFiltersDto } from './dto/notification-filters.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
+import { Prisma } from '@prisma/client';
 
 export interface NotificationsRequester {
   role: UserRole;
@@ -38,11 +39,11 @@ export class NotificationsService {
         type: createNotificationDto.type,
         title: createNotificationDto.title,
         body: createNotificationDto.body,
-        data: createNotificationDto.data as any,
-        targetRoles: createNotificationDto.targetRoles ?? [],
-        targetUserIds: createNotificationDto.targetUserIds ?? [],
-        targetClassIds: createNotificationDto.targetClassIds ?? [],
-        targetSectionIds: createNotificationDto.targetSectionIds ?? [],
+        data: createNotificationDto.data ? JSON.stringify(createNotificationDto.data) : null,
+        targetRoles: createNotificationDto.targetRoles ? JSON.stringify(createNotificationDto.targetRoles) : '[]',
+        targetUserIds: createNotificationDto.targetUserIds ? JSON.stringify(createNotificationDto.targetUserIds) : '[]',
+        targetClassIds: createNotificationDto.targetClassIds ? JSON.stringify(createNotificationDto.targetClassIds) : '[]',
+        targetSectionIds: createNotificationDto.targetSectionIds ? JSON.stringify(createNotificationDto.targetSectionIds) : '[]',
         isSchoolWide: createNotificationDto.isSchoolWide ?? false,
         publishedAt: createNotificationDto.publishedAt ? new Date(createNotificationDto.publishedAt) : null,
       },
@@ -57,7 +58,15 @@ export class NotificationsService {
       schoolId: targetSchoolId,
     });
 
-    return notification;
+    const result = notification;
+    if (result.data !== null) {
+      try {
+        result.data = JSON.parse(result.data);
+      } catch {
+        // keep as string if invalid JSON
+      }
+    }
+    return result;
   }
 
   async send(actorId: string, createNotificationDto: CreateNotificationDto, requester: NotificationsRequester) {
@@ -65,7 +74,7 @@ export class NotificationsService {
   }
 
   async findAll(requester: NotificationsRequester, filters: NotificationFiltersDto) {
-    const where: any = { deletedAt: null };
+    const where: Record<string, unknown> = { deletedAt: null };
 
     if (requester.role === 'SUPER_ADMIN') {
       if (filters.schoolId) {
@@ -88,9 +97,20 @@ export class NotificationsService {
       ];
     }
 
-    return this.prisma.notification.findMany({
+    const results = await this.prisma.notification.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+    });
+    return results.map(notification => {
+      const parsed = notification;
+      if (parsed.data !== null) {
+        try {
+          parsed.data = JSON.parse(parsed.data);
+        } catch {
+          // keep as string
+        }
+      }
+      return parsed;
     });
   }
 
@@ -121,7 +141,15 @@ export class NotificationsService {
       throw new ForbiddenException('Access denied to this notification');
     }
 
-    return notification;
+    const result = notification;
+    if (result.data !== null) {
+      try {
+        result.data = JSON.parse(result.data);
+      } catch {
+        // keep as string
+      }
+    }
+    return result;
   }
 
   async update(publicId: string, actorId: string, updateNotificationDto: UpdateNotificationDto, requester: NotificationsRequester) {
@@ -140,9 +168,9 @@ export class NotificationsService {
 
     const oldNotification = { ...notification };
 
-    const data: any = { ...updateNotificationDto };
-    if (data.data !== undefined) {
-      data.data = data.data as any;
+    const data: Prisma.NotificationUpdateInput = { ...updateNotificationDto } as Prisma.NotificationUpdateInput;
+    if (updateNotificationDto.data !== undefined) {
+      data.data = JSON.stringify(updateNotificationDto.data);
     }
 
     const updated = await this.prisma.notification.update({
@@ -160,7 +188,15 @@ export class NotificationsService {
       schoolId: notification.schoolId,
     });
 
-    return updated;
+    const result = updated;
+    if (result.data !== null) {
+      try {
+        result.data = JSON.parse(result.data);
+      } catch {
+        // keep as string
+      }
+    }
+    return result;
   }
 
   async remove(publicId: string, actorId: string, requester: NotificationsRequester) {
@@ -192,6 +228,14 @@ export class NotificationsService {
       schoolId: notification.schoolId,
     });
 
-    return removed;
+    const result = removed;
+    if (result.data !== null) {
+      try {
+        result.data = JSON.parse(result.data);
+      } catch {
+        // keep as string
+      }
+    }
+    return result;
   }
 }

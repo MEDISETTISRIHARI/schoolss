@@ -12,7 +12,7 @@ import {
   type CreateHomework,
   type UpdateHomework,
 } from '@school-management/shared-types';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Homework } from '@prisma/client';
 
 export default function HomeworkPage() {
@@ -85,15 +85,25 @@ export default function HomeworkPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateHomework }) => {
-      const response = await api.patch(`/homework/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateHomework }) => {
+       const response = await api.patch(`/homework/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['homework'] });
-      setEditingHomework(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['homework'] });
+       setEditingHomework(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/homework/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['homework'] });
+     },
+   });
 
   const {
     register,
@@ -119,7 +129,7 @@ export default function HomeworkPage() {
 
   const onUpdate = (data: UpdateHomework) => {
     if (editingHomework) {
-      updateMutation.mutate({ id: editingHomework.id, data });
+       updateMutation.mutate({ publicId: editingHomework.publicId, data });
     }
   };
 
@@ -424,7 +434,7 @@ export default function HomeworkPage() {
           </Card>
         ) : (
           homeworks?.map((hw) => (
-            <Card key={hw.id}>
+            <Card key={hw.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{hw.title}</h3>
@@ -439,11 +449,14 @@ export default function HomeworkPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingHomework(hw)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(hw.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingHomework(hw)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -452,3 +465,5 @@ export default function HomeworkPage() {
     </div>
   );
 }
+
+

@@ -36,15 +36,25 @@ export default function SchoolsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateSchool }) => {
-      const response = await api.patch(`/schools/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateSchool }) => {
+       const response = await api.patch(`/schools/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['schools'] });
-      setEditingSchool(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['schools'] });
+       setEditingSchool(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/schools/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['schools'] });
+     },
+   });
 
   const {
     register,
@@ -72,9 +82,9 @@ export default function SchoolsPage() {
 
   const onUpdate = (data: UpdateSchool) => {
     if (editingSchool) {
-      updateMutation.mutate({ id: editingSchool.id, data }, {
-        onSuccess: () => resetEdit(),
-      });
+       updateMutation.mutate({ publicId: editingSchool.publicId, data }, {
+         onSuccess: () => resetEdit(),
+       });
     }
   };
 
@@ -175,7 +185,7 @@ export default function SchoolsPage() {
           </Card>
         ) : (
           schools?.map((school) => (
-            <Card key={school.id}>
+            <Card key={school.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{school.name}</h3>
@@ -185,11 +195,14 @@ export default function SchoolsPage() {
                     {school.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingSchool(school)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(school.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingSchool(school)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -198,3 +211,5 @@ export default function SchoolsPage() {
     </div>
   );
 }
+
+

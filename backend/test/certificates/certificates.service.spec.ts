@@ -3,7 +3,7 @@ import { CertificatesService } from '../../src/certificates/certificates.service
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 import { AuditLogService } from '../../src/audit/audit.service';
 import { NotFoundException, ForbiddenException, BadRequestException, ConflictException } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 describe('CertificatesService', () => {
   let service: CertificatesService;
@@ -15,7 +15,7 @@ describe('CertificatesService', () => {
     email: 'admin@school.com',
     firstName: 'Admin',
     lastName: 'User',
-    role: UserRole.SCHOOL_ADMIN,
+    role: 'SCHOOL_ADMIN' as UserRole,
     schoolId: 'school-1',
   };
 
@@ -91,7 +91,7 @@ describe('CertificatesService', () => {
         studentId: 'student-1',
         certificateNumber: 'CERT-001',
         fileUrl: 'https://example.com/cert.pdf',
-      }, { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' });
+      }, { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' });
 
       expect(prismaService.award.findFirst).toHaveBeenCalled();
       expect(prismaService.student.findFirst).toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe('CertificatesService', () => {
           awardId: 'nonexistent',
           studentId: 'student-1',
           certificateNumber: 'CERT-001',
-        }, { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' }),
+        }, { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -120,7 +120,7 @@ describe('CertificatesService', () => {
           awardId: 'award-1',
           studentId: 'nonexistent',
           certificateNumber: 'CERT-001',
-        }, { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' }),
+        }, { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -132,7 +132,7 @@ describe('CertificatesService', () => {
           awardId: 'award-1',
           studentId: 'student-1',
           certificateNumber: 'CERT-001',
-        }, { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' }),
+        }, { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -142,20 +142,20 @@ describe('CertificatesService', () => {
           awardId: 'award-1',
           studentId: 'student-1',
           certificateNumber: 'CERT-001',
-        }, { role: UserRole.TEACHER }),
+        }, { role: 'TEACHER' as UserRole }),
       ).rejects.toThrow(ForbiddenException);
     });
   });
 
   describe('findAll', () => {
     it('should return all certificates for SUPER_ADMIN', async () => {
-      const result = await service.findAll({ role: UserRole.SUPER_ADMIN });
+      const result = await service.findAll({ role: 'SUPER_ADMIN' as UserRole });
       expect(prismaService.certificate.findMany).toHaveBeenCalled();
       expect(result).toEqual([mockCertificate]);
     });
 
     it('should return school certificates for SCHOOL_ADMIN', async () => {
-      const result = await service.findAll({ role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' });
+      const result = await service.findAll({ role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' });
       expect(prismaService.certificate.findMany).toHaveBeenCalledWith({
         where: { schoolId: 'school-1', deletedAt: null },
         include: expect.any(Object),
@@ -166,14 +166,14 @@ describe('CertificatesService', () => {
 
     it('should throw ForbiddenException for non-SUPER_ADMIN without schoolId', async () => {
       await expect(
-        service.findAll({ role: UserRole.SCHOOL_ADMIN }),
+        service.findAll({ role: 'SCHOOL_ADMIN' as UserRole }),
       ).rejects.toThrow(ForbiddenException);
     });
   });
 
   describe('findOne', () => {
     it('should return certificate by id for authorized user', async () => {
-      const result = await service.findOne('cert-1', { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' });
+      const result = await service.findOne('cert-1', { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' });
       expect(result).toEqual(mockCertificate);
     });
 
@@ -181,20 +181,20 @@ describe('CertificatesService', () => {
       prismaService.certificate.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.findOne('nonexistent', { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' }),
+        service.findOne('nonexistent', { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' }),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException for unauthorized access', async () => {
       await expect(
-        service.findOne('cert-1', { role: UserRole.SCHOOL_ADMIN, schoolId: 'different-school' }),
+        service.findOne('cert-1', { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'different-school' }),
       ).rejects.toThrow(ForbiddenException);
     });
   });
 
   describe('remove', () => {
     it('should soft delete certificate successfully', async () => {
-      const result = await service.remove('cert-1', 'user-1', { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' });
+      const result = await service.remove('cert-1', 'user-1', { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' });
       expect(prismaService.certificate.update).toHaveBeenCalledWith({
         where: { id: 'cert-1' },
         data: { deletedAt: expect.any(Date) },
@@ -206,14 +206,14 @@ describe('CertificatesService', () => {
       prismaService.certificate.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.remove('nonexistent', 'user-1', { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' }),
+        service.remove('nonexistent', 'user-1', { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' }),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('download', () => {
     it('should return certificate with download URL', async () => {
-      const result = await service.download('cert-1', { role: UserRole.SCHOOL_ADMIN, schoolId: 'school-1' });
+      const result = await service.download('cert-1', { role: 'SCHOOL_ADMIN' as UserRole, schoolId: 'school-1' });
       expect(result).toHaveProperty('downloadUrl');
     });
 
@@ -221,7 +221,7 @@ describe('CertificatesService', () => {
       prismaService.certificate.findFirst.mockResolvedValue({ ...mockCertificate, fileUrl: null });
 
       await expect(
-        service.download('cert-1', { role: UserRole.TEACHER, schoolId: 'school-1' }),
+        service.download('cert-1', { role: 'TEACHER' as UserRole, schoolId: 'school-1' }),
       ).rejects.toThrow(BadRequestException);
     });
   });

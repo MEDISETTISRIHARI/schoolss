@@ -11,7 +11,7 @@ import { AuditLogService } from '../audit/audit.service';
 import { CreateMarkDto } from './dto/create-mark.dto';
 import { UpdateMarkDto } from './dto/update-mark.dto';
 import { QueryMarkDto } from './dto/query-mark.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 interface Requester {
   role: UserRole;

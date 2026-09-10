@@ -7,7 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangeRoleDto } from './dto/change-role.dto';
 import { ChangeStatusDto } from './dto/change-status.dto';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@school-management/shared-types';
 
 export interface SafeUser {
   id: string;

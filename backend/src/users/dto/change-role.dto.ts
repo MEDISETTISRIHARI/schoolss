@@ -1,8 +1,8 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { UserRole } from '@prisma/client';
+import { UserRole, UserRoleValues } from '@school-management/shared-types';
 
 export class ChangeRoleDto {
-  @IsEnum(UserRole)
-  @IsNotEmpty()
-  role!: UserRole;
+@IsEnum([...UserRoleValues] as const)
+   @IsNotEmpty()
+   role!: UserRole;
 }

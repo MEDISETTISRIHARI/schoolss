@@ -12,7 +12,7 @@ import {
   type CreateSection,
   type UpdateSection,
 } from '@school-management/shared-types';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Section } from '@prisma/client';
 
 export default function SectionsPage() {
@@ -58,15 +58,25 @@ export default function SectionsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateSection }) => {
-      const response = await api.patch(`/sections/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateSection }) => {
+       const response = await api.patch(`/sections/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sections'] });
-      setEditingSection(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['sections'] });
+       setEditingSection(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/sections/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['sections'] });
+     },
+   });
 
   const {
     register,
@@ -92,7 +102,7 @@ export default function SectionsPage() {
 
   const onUpdate = (data: UpdateSection) => {
     if (editingSection) {
-      updateMutation.mutate({ id: editingSection.id, data }, { onSuccess: () => resetEdit() });
+       updateMutation.mutate({ publicId: editingSection.publicId, data }, { onSuccess: () => resetEdit() });
     }
   };
 
@@ -207,7 +217,7 @@ export default function SectionsPage() {
           </Card>
         ) : (
           sections?.map((section) => (
-            <Card key={section.id}>
+            <Card key={section.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{section.name}</h3>
@@ -218,9 +228,14 @@ export default function SectionsPage() {
                     <p className="text-sm text-gray-500">Capacity: {section.capacity}</p>
                   )}
                 </div>
-                <Button size="sm" variant="secondary" onClick={() => setEditingSection(section)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(section.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingSection(section)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -229,3 +244,5 @@ export default function SectionsPage() {
     </div>
   );
 }
+
+

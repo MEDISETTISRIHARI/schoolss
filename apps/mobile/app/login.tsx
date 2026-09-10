@@ -28,7 +28,8 @@ export default function LoginScreen() {
       login(user, accessToken, refreshToken);
       router.replace('/(tabs)');
     } catch (err: unknown) {
-      Alert.alert('Login Failed', err instanceof Error ? err.message : 'An error occurred');
+      const message = err instanceof Error ? err.message : 'An error occurred';
+      Alert.alert('Login Failed', message);
     } finally {
       setLoading(false);
     }

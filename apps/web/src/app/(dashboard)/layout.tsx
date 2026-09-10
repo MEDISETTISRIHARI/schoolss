@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -18,21 +18,21 @@ import {
   Clipboard,
   Award,
   Clock,
-   GraduationCap,
-   BookOpen,
-   Bell,
-   ClipboardList,
+  GraduationCap,
+  BookOpen,
+  Bell,
+  ClipboardList,
 } from 'lucide-react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, permission: null },
   { name: 'Schools', href: '/schools', icon: School, permission: 'school.view' },
   { name: 'Users', href: '/users', icon: Users, permission: 'users.view' },
   { name: 'Classes', href: '/classes', icon: GraduationCap, permission: 'classes.view' },
   { name: 'Sections', href: '/sections', icon: ClipboardList, permission: 'sections.view' },
   { name: 'Subjects', href: '/subjects', icon: BookOpen, permission: 'subjects.view' },
-  { name: 'Students', href: '/students', icon: Users, permission: 'students.view.assigned' },
-   { name: 'Teachers', href: '/teachers', icon: GraduationCap, permission: 'teachers.view' },
+  { name: 'Students', href: '/students', icon: Users, permission: 'students.view' },
+  { name: 'Teachers', href: '/teachers', icon: GraduationCap, permission: 'teachers.view' },
   { name: 'Examinations', href: '/examinations', icon: CalendarDays, permission: 'examinations.view' },
   { name: 'Marks', href: '/marks', icon: BookCheck, permission: 'marks.view' },
   { name: 'Results', href: '/results', icon: Clipboard, permission: 'results.view' },
@@ -44,6 +44,19 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings, permission: 'settings.manage' },
 ];
 
+const ROLE_PERMISSIONS: Record<string, string[]> = {
+  SUPER_ADMIN: ['school.view', 'users.view', 'classes.view', 'sections.view', 'subjects.view', 'students.view', 'teachers.view', 'examinations.view', 'marks.view', 'results.view', 'attendance.view', 'homework.view', 'timetable.view', 'awards.view', 'notifications.view', 'settings.manage'],
+  PRINCIPAL: ['school.view', 'users.view', 'classes.view', 'sections.view', 'subjects.view', 'students.view', 'teachers.view', 'examinations.view', 'marks.view', 'results.view', 'attendance.view', 'homework.view', 'timetable.view', 'awards.view', 'notifications.view', 'settings.manage'],
+  SCHOOL_ADMIN: ['school.view', 'users.view', 'classes.view', 'sections.view', 'subjects.view', 'students.view', 'teachers.view', 'examinations.view', 'marks.view', 'results.view', 'attendance.view', 'homework.view', 'timetable.view', 'awards.view', 'notifications.view', 'settings.manage'],
+  TEACHER: ['classes.view', 'sections.view', 'subjects.view', 'students.view', 'teachers.view', 'examinations.view', 'marks.view', 'results.view', 'attendance.view', 'homework.view', 'timetable.view', 'awards.view', 'notifications.view'],
+  STUDENT: ['classes.view', 'sections.view', 'subjects.view', 'examinations.view', 'marks.view', 'results.view', 'attendance.view', 'homework.view', 'timetable.view', 'notifications.view'],
+};
+
+function getUserPermissions(role: string | undefined): string[] {
+  if (!role) return [];
+  return ROLE_PERMISSIONS[role] || [];
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -53,6 +66,17 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !user) {
+      router.push('/login');
+    }
+  }, [mounted, user, router]);
 
   const handleLogout = async () => {
     try {
@@ -67,8 +91,14 @@ export default function DashboardLayout({
     }
   };
 
-  if (!user) {
-    router.push('/login');
+  const userPermissions = getUserPermissions(user?.role);
+
+  const visibleNavigation = navigation.filter((item) => {
+    if (!item.permission) return true;
+    return userPermissions.includes(item.permission);
+  });
+
+  if (!mounted || !user) {
     return null;
   }
 
@@ -93,7 +123,7 @@ export default function DashboardLayout({
             <h1 className="text-xl font-bold text-gray-900">SchoolMS</h1>
           </div>
           <nav className="mt-4 px-4 space-y-1">
-            {navigation.map((item) => {
+            {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
                 <Link

@@ -14,7 +14,7 @@ import { UpdateResultDto } from './dto/update-result.dto';
 import { QueryResultDto } from './dto/query-result.dto';
 import { RequirePermissions } from '../common/decorators/roles.decorator';
 import { CurrentUser, CurrentUserId } from '../common/decorators/current-user.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 interface RequestUser {
   sub: string;

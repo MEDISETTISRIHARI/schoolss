@@ -11,7 +11,7 @@ import { AuditLogService } from '../audit/audit.service';
 import { CreateExaminationDto } from './dto/create-examination.dto';
 import { UpdateExaminationDto } from './dto/update-examination.dto';
 import { QueryExaminationDto } from './dto/query-examination.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 @Injectable()
 export class ExaminationsService {

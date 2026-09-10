@@ -1,4 +1,4 @@
-import { connectivityService, ConnectionStatus } from './connectivity.service';
+import { connectivityService } from './connectivity.service';
 
 export type OfflineAction =
   | { type: 'FETCH_STUDENTS'; payload?: unknown }
@@ -35,7 +35,9 @@ export class SyncQueueService {
     this.processing = false;
   }
 
-  private async execute(action: OfflineAction): Promise<void> {
+  private async execute(_action: OfflineAction): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _action;
     // Placeholder for actual sync logic
     // Real implementation would dispatch mutations to the server
     // and update local cache with the response.

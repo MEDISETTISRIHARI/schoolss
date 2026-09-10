@@ -63,12 +63,11 @@ export default function SettingsPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Settings (JSON)</label>
-              <textarea
-                {...register('settings')}
-                rows={10}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm"
-                defaultValue={JSON.stringify(settings, null, 2)}
-              />
+               <textarea
+                 {...register('settings')}
+                 rows={10}
+                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm"
+               />
               {errors.settings?.message && (<p className="mt-1 text-sm text-red-600">{String(errors.settings.message)}</p>)}
             </div>
             <Button type="submit" disabled={updateMutation.isPending}>
@@ -81,3 +80,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+

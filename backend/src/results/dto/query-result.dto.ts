@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsEnum, IsInt, Min, Max } from 'class-validator';
-import { ResultStatus } from '@prisma/client';
+import { ResultStatus, ResultStatusValues } from '@school-management/shared-types';
 
 export class QueryResultDto {
   @IsOptional()
@@ -23,8 +23,8 @@ export class QueryResultDto {
   examinationId?: string;
 
   @IsOptional()
-  @IsEnum(ResultStatus)
-  status?: ResultStatus;
+@IsEnum([...ResultStatusValues] as const)
+   status?: ResultStatus;
 
   @IsOptional()
   @IsInt()

@@ -8,7 +8,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { ResultStatus } from '@prisma/client';
+import { ResultStatus, ResultStatusValues } from '@school-management/shared-types';
 
 export class CreateResultDto {
   @IsOptional()
@@ -63,8 +63,8 @@ export class CreateResultDto {
   cgpa?: number;
 
   @IsOptional()
-  @IsEnum(ResultStatus)
-  status: ResultStatus = ResultStatus.DRAFT;
+@IsEnum([...ResultStatusValues] as const)
+   status: ResultStatus = 'DRAFT';
 
   @IsOptional()
   @IsDateString()

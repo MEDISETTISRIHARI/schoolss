@@ -5,7 +5,7 @@ import { UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 import { AuditLogService } from '../../src/audit/audit.service';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),

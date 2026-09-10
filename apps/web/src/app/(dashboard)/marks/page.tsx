@@ -12,7 +12,7 @@ import {
   type CreateMark,
   type UpdateMark,
 } from '@school-management/shared-types';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Mark } from '@prisma/client';
 
 export default function MarksPage() {
@@ -34,7 +34,6 @@ export default function MarksPage() {
       const { data } = await api.get('/examinations');
       return data;
     },
-    enabled: isCreating || !!editingMark,
   });
 
   const { data: students } = useQuery({
@@ -43,7 +42,6 @@ export default function MarksPage() {
       const { data } = await api.get('/students');
       return data;
     },
-    enabled: isCreating || !!editingMark,
   });
 
   const { data: subjects } = useQuery({
@@ -52,7 +50,6 @@ export default function MarksPage() {
       const { data } = await api.get('/subjects');
       return data;
     },
-    enabled: isCreating || !!editingMark,
   });
 
   const { data: teachers } = useQuery({
@@ -61,8 +58,11 @@ export default function MarksPage() {
       const { data } = await api.get('/teachers');
       return data;
     },
-    enabled: isCreating || !!editingMark,
   });
+
+  const studentMap = new Map((students as any[])?.map((s) => [s.id, s.user ? `${s.user.firstName} ${s.user.lastName}` : s.admissionNumber]) || []);
+  const subjectMap = new Map((subjects as any[])?.map((s) => [s.id, s.name]) || []);
+  const examinationMap = new Map((examinations as any[])?.map((e) => [e.id, e.name]) || []);
 
   const createMutation = useMutation({
     mutationFn: async (newMark: CreateMark) => {
@@ -76,15 +76,25 @@ export default function MarksPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateMark }) => {
-      const response = await api.patch(`/marks/${id}`, data);
+     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateMark }) => {
+       const response = await api.patch(`/marks/${publicId}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marks'] });
-      setEditingMark(null);
-    },
-  });
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['marks'] });
+       setEditingMark(null);
+     },
+   });
+
+   const deleteMutation = useMutation({
+     mutationFn: async (publicId: string) => {
+       const response = await api.delete(`/marks/${publicId}`);
+       return response.data;
+     },
+     onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ['marks'] });
+     },
+   });
 
   const {
     register,
@@ -110,7 +120,7 @@ export default function MarksPage() {
 
   const onUpdate = (data: UpdateMark) => {
     if (editingMark) {
-      updateMutation.mutate({ id: editingMark.id, data });
+       updateMutation.mutate({ publicId: editingMark.publicId, data });
     }
   };
 
@@ -352,20 +362,23 @@ export default function MarksPage() {
           </Card>
         ) : (
           marks?.map((mark) => (
-            <Card key={mark.id}>
+            <Card key={mark.publicId}>
               <CardContent className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{mark.studentId}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{studentMap.get(mark.studentId) || mark.studentId}</h3>
                   <p className="text-sm text-gray-500">
-                    Examination: {mark.examinationId} · Subject: {mark.subjectId}
+                    Examination: {examinationMap.get(mark.examinationId) || mark.examinationId} · Subject: {subjectMap.get(mark.subjectId) || mark.subjectId}
                   </p>
                   <p className="text-sm text-gray-500">Marks: {Number(mark.marksObtained)}</p>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditingMark(mark)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+                 <div className="flex gap-2">
+                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(mark.publicId)} disabled={deleteMutation.isPending}>
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="secondary" onClick={() => setEditingMark(mark)}>
+                     <Pencil className="h-4 w-4" />
+                   </Button>
+                 </div>
               </CardContent>
             </Card>
           ))
@@ -374,3 +387,5 @@ export default function MarksPage() {
     </div>
   );
 }
+
+

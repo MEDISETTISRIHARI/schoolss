@@ -29,7 +29,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(ConfigService)));
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector)));
   app.useGlobalInterceptors(new LoggingInterceptor(app.get(WinstonLoggerService)));
   app.useGlobalInterceptors(new SentryInterceptor(app.get(SentryService), app.get(WinstonLoggerService)));

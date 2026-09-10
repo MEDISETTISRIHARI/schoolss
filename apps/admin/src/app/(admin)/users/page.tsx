@@ -17,11 +17,11 @@ import {
   type ChangeStatus,
 } from '@school-management/shared-types';
 import { UserCheck, UserX, Plus, Pencil } from 'lucide-react';
-import { UserRole, UserStatus } from '@prisma/client';
+
 import type { User } from '@prisma/client';
 
-const roles: UserRole[] = ['SUPER_ADMIN', 'PRINCIPAL', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'];
-const statuses: UserStatus[] = ['ACTIVE', 'SUSPENDED', 'ARCHIVED'];
+const roles: ('SUPER_ADMIN' | 'PRINCIPAL' | 'SCHOOL_ADMIN' | 'TEACHER' | 'STUDENT')[] = ['SUPER_ADMIN', 'PRINCIPAL', 'SCHOOL_ADMIN', 'TEACHER', 'STUDENT'];
+const statuses: ('ACTIVE' | 'SUSPENDED' | 'ARCHIVED')[] = ['ACTIVE', 'SUSPENDED', 'ARCHIVED'];
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
@@ -346,3 +346,5 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+
+

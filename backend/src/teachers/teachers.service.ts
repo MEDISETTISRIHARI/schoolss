@@ -3,7 +3,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditLogService } from '../audit/audit.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@school-management/shared-types';
 
 @Injectable()
 export class TeachersService {
@@ -11,6 +11,13 @@ export class TeachersService {
     private prisma: PrismaService,
     private auditLogService: AuditLogService,
   ) {}
+
+  private stripUserPasswordHash(teacher: { user?: Record<string, unknown> }) {
+    if (teacher.user) {
+      delete (teacher.user as { passwordHash?: string }).passwordHash;
+    }
+    return teacher;
+  }
 
   async create(actorId: string, createTeacherDto: CreateTeacherDto, requester: { role: UserRole; schoolId?: string }) {
     const user = await this.prisma.user.findFirst({
@@ -43,7 +50,24 @@ export class TeachersService {
         experience: createTeacherDto.experience,
         joiningDate: createTeacherDto.joiningDate ? new Date(createTeacherDto.joiningDate) : new Date(),
       },
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            publicId: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            profileImageUrl: true,
+            role: true,
+            status: true,
+            schoolId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
 
     await this.auditLogService.create({
@@ -55,30 +79,66 @@ export class TeachersService {
       schoolId: user.schoolId ?? undefined,
     });
 
-    return teacher;
+    return this.stripUserPasswordHash(teacher);
   }
 
   async findAll(requester: { role: UserRole; schoolId?: string }) {
     if (requester.role === 'SUPER_ADMIN') {
-      return this.prisma.teacher.findMany({
+      const teachers = await this.prisma.teacher.findMany({
         where: { deletedAt: null },
-        include: { user: true },
+        include: {
+          user: {
+            select: {
+              id: true,
+              publicId: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              phone: true,
+              profileImageUrl: true,
+              role: true,
+              status: true,
+              schoolId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
         orderBy: { createdAt: 'desc' },
       });
+      return teachers.map((t) => this.stripUserPasswordHash(t));
     }
 
     if (!requester.schoolId) {
       throw new ForbiddenException('School context required');
     }
 
-    return this.prisma.teacher.findMany({
+    const teachers = await this.prisma.teacher.findMany({
       where: {
         deletedAt: null,
         user: { schoolId: requester.schoolId },
       },
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            publicId: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            profileImageUrl: true,
+            role: true,
+            status: true,
+            schoolId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
+    return teachers.map((t) => this.stripUserPasswordHash(t));
   }
 
   private async resolvePublicId(publicId: string): Promise<string> {
@@ -98,7 +158,24 @@ export class TeachersService {
     const id = await this.resolvePublicId(publicId);
     const teacher = await this.prisma.teacher.findFirst({
       where: { id, deletedAt: null },
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            publicId: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            profileImageUrl: true,
+            role: true,
+            status: true,
+            schoolId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
 
     if (!teacher) {
@@ -109,14 +186,31 @@ export class TeachersService {
       throw new ForbiddenException('Access denied to this teacher');
     }
 
-    return teacher;
+    return this.stripUserPasswordHash(teacher);
   }
 
   async update(publicId: string, actorId: string, updateTeacherDto: UpdateTeacherDto, requester: { role: UserRole; schoolId?: string }) {
     const id = await this.resolvePublicId(publicId);
     const teacher = await this.prisma.teacher.findFirst({
       where: { id, deletedAt: null },
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            publicId: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            profileImageUrl: true,
+            role: true,
+            status: true,
+            schoolId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
 
     if (!teacher) {
@@ -138,7 +232,24 @@ export class TeachersService {
     const updated = await this.prisma.teacher.update({
       where: { id },
       data,
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            publicId: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            profileImageUrl: true,
+            role: true,
+            status: true,
+            schoolId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
 
     await this.auditLogService.create({
@@ -151,14 +262,31 @@ export class TeachersService {
       schoolId: teacher.user.schoolId ?? undefined,
     });
 
-    return updated;
+    return this.stripUserPasswordHash(updated);
   }
 
   async remove(publicId: string, actorId: string, requester: { role: UserRole; schoolId?: string }) {
     const id = await this.resolvePublicId(publicId);
     const teacher = await this.prisma.teacher.findFirst({
       where: { id, deletedAt: null },
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            publicId: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            profileImageUrl: true,
+            role: true,
+            status: true,
+            schoolId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
 
     if (!teacher) {
