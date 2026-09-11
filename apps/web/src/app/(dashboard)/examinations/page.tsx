@@ -9,32 +9,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CreateExaminationSchema,
   UpdateExaminationSchema,
+  ExaminationTypeValues,
   type CreateExamination,
   type UpdateExamination,
 } from '@school-management/shared-types';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import type { Examination } from '@prisma/client';
-
-const ExaminationType = {
-  MID_TERM: 'MID_TERM',
-  FINAL: 'FINAL',
-  QUIZ: 'QUIZ',
-  ASSIGNMENT: 'ASSIGNMENT',
-  PROJECT: 'PROJECT',
-  PRACTICAL: 'PRACTICAL',
-  ORAL: 'ORAL',
-};
 import { useAuthStore } from '@/lib/stores/auth-store';
 
 export default function ExaminationsPage() {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const [editingExam, setEditingExam] = useState<Examination | null>(null);
+  const [editingExam, setEditingExam] = useState<any>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
-  const { data: examinations, isLoading, error } = useQuery<Examination[]>({
+  const { data: examinations, isLoading, error } = useQuery<any[]>({
     queryKey: ['examinations'],
     queryFn: async () => {
       const { data } = await api.get('/examinations');
@@ -99,25 +89,25 @@ export default function ExaminationsPage() {
   });
 
   const updateMutation = useMutation({
-     mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateExamination }) => {
-       const response = await api.patch(`/examinations/${publicId}`, data);
+    mutationFn: async ({ publicId, data }: { publicId: string; data: UpdateExamination }) => {
+      const response = await api.patch(`/examinations/${publicId}`, data);
       return response.data;
     },
-     onSuccess: () => {
-       queryClient.invalidateQueries({ queryKey: ['examinations'] });
-       setEditingExam(null);
-     },
-   });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['examinations'] });
+      setEditingExam(null);
+    },
+  });
 
-   const deleteMutation = useMutation({
-     mutationFn: async (publicId: string) => {
-       const response = await api.delete(`/examinations/${publicId}`);
-       return response.data;
-     },
-     onSuccess: () => {
-       queryClient.invalidateQueries({ queryKey: ['examinations'] });
-     },
-   });
+  const deleteMutation = useMutation({
+    mutationFn: async (publicId: string) => {
+      const response = await api.delete(`/examinations/${publicId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['examinations'] });
+    },
+  });
 
   const {
     register,
@@ -143,7 +133,7 @@ export default function ExaminationsPage() {
 
   const onUpdate = (data: UpdateExamination) => {
     if (editingExam) {
-       updateMutation.mutate({ publicId: editingExam.publicId, data });
+      updateMutation.mutate({ publicId: editingExam.publicId, data });
     }
   };
 
@@ -248,7 +238,7 @@ export default function ExaminationsPage() {
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                   >
                     <option value="">Select Type</option>
-                    {Object.values(ExaminationType).map((type) => (
+                    {ExaminationTypeValues.map((type) => (
                       <option key={type} value={type}>{type.replace('_', ' ')}</option>
                     ))}
                   </select>
@@ -413,7 +403,7 @@ export default function ExaminationsPage() {
                     {...registerEdit('type')}
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                   >
-                    {Object.values(ExaminationType).map((type) => (
+                    {ExaminationTypeValues.map((type) => (
                       <option key={type} value={type}>{type.replace('_', ' ')}</option>
                     ))}
                   </select>
@@ -515,14 +505,14 @@ export default function ExaminationsPage() {
                     )}
                   </div>
                 </div>
-                 <div className="flex gap-2">
-                   <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(exam.publicId)} disabled={deleteMutation.isPending}>
-                     <Trash2 className="h-4 w-4" />
-                   </Button>
-                   <Button size="sm" variant="secondary" onClick={() => setEditingExam(exam)}>
-                     <Pencil className="h-4 w-4" />
-                   </Button>
-                 </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(exam.publicId)} disabled={deleteMutation.isPending}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => setEditingExam(exam)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))
@@ -531,5 +521,3 @@ export default function ExaminationsPage() {
     </div>
   );
 }
-
-

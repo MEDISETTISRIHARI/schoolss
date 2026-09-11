@@ -115,14 +115,14 @@ export default function DashboardLayout({
 
         {/* Sidebar */}
         <div
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex h-16 items-center justify-center border-b border-gray-200">
             <h1 className="text-xl font-bold text-gray-900">SchoolMS</h1>
           </div>
-          <nav className="mt-4 px-4 space-y-1">
+          <nav className="flex-1 overflow-y-auto px-4 py-4">
             {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
@@ -142,7 +142,7 @@ export default function DashboardLayout({
               );
             })}
           </nav>
-          <div className="absolute bottom-0 w-full border-t border-gray-200 p-4">
+          <div className="border-t border-gray-200 p-4">
             <div className="flex items-center mb-3">
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-900">

@@ -49,7 +49,24 @@ describe('StudentsService', () => {
       expect(result).toEqual(mockStudents);
       expect(prisma.student.findMany).toHaveBeenCalledWith({
         where: { deletedAt: null },
-        include: { user: true },
+        include: {
+          user: {
+            select: {
+              id: true,
+              publicId: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              phone: true,
+              profileImageUrl: true,
+              role: true,
+              status: true,
+              schoolId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
         orderBy: { createdAt: 'desc' },
       });
     });

@@ -12,37 +12,78 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const { data: stats, isLoading, error } = useQuery<DashboardStats>({
-    queryKey: ['dashboard-stats'],
+  const {
+    data: schoolsData,
+    isLoading: schoolsLoading,
+    error: schoolsError,
+  } = useQuery({
+    queryKey: ['dashboard-schools'],
     queryFn: async () => {
-      const [schoolsRes, usersRes] = await Promise.all([
-        api.get('/schools'),
-        api.get('/users'),
-      ]);
-      const schools = schoolsRes.data;
-      const users = usersRes.data;
-      return {
-        totalSchools: schools.length,
-        totalUsers: users.length,
-        totalStudents: users.filter((u: any) => u.role === 'STUDENT').length,
-        totalTeachers: users.filter((u: any) => u.role === 'TEACHER').length,
-      };
+      const { data } = await api.get('/schools');
+      return data;
     },
   });
 
-  if (isLoading) {
+  const {
+    data: usersData,
+    isLoading: usersLoading,
+    error: usersError,
+  } = useQuery({
+    queryKey: ['dashboard-users'],
+    queryFn: async () => {
+      const { data } = await api.get('/users');
+      return data;
+    },
+  });
+
+  const schools = Array.isArray(schoolsData) ? schoolsData : [];
+  const users = Array.isArray(usersData) ? usersData : [];
+
+  const totalSchools = schools.length;
+  const totalUsers = users.length;
+  const totalStudents = users.filter((u: any) => u.role === 'STUDENT').length;
+  const totalTeachers = users.filter((u: any) => u.role === 'TEACHER').length;
+
+  const getErrorMessage = (error: unknown): string | undefined => {
+    if (!error) return undefined;
+    const err = error as any;
+    return err?.response?.data?.message ?? err?.message ?? (typeof error === 'string' ? error : undefined);
+  };
+
+  const schoolsErrorMessage = getErrorMessage(schoolsError);
+  const usersErrorMessage = getErrorMessage(usersError);
+
+  const hasAnyError = !!schoolsErrorMessage || !!usersErrorMessage;
+
+  if (schoolsLoading || usersLoading) {
     return <div className="text-center text-gray-500">Loading...</div>;
   }
 
-  if (error) {
-    return <div className="text-center text-red-600">Failed to load dashboard</div>;
+  if (hasAnyError) {
+    return (
+      <div className="text-center text-red-600">
+        {/* Show partial data if available, otherwise generic error */}
+        {totalSchools > 0 || totalUsers > 0 ? (
+          <div>
+            <span className="text-red-600">Partial data loaded</span>
+            <br />
+            <small className="text-gray-400">
+              {schoolsErrorMessage && 'Schools request failed: ' + schoolsErrorMessage}{' '}
+              {usersErrorMessage && 'Users request failed: ' + usersErrorMessage}
+            </small>
+          </div>
+        ) : (
+          'Failed to load dashboard'
+        )}
+      </div>
+    );
   }
 
   const statCards = [
-    { name: 'Total Schools', value: stats?.totalSchools ?? 0, color: 'bg-blue-500' },
-    { name: 'Total Users', value: stats?.totalUsers ?? 0, color: 'bg-green-500' },
-    { name: 'Students', value: stats?.totalStudents ?? 0, color: 'bg-purple-500' },
-    { name: 'Teachers', value: stats?.totalTeachers ?? 0, color: 'bg-orange-500' },
+    { name: 'Total Schools', value: totalSchools, color: 'bg-blue-500' },
+    { name: 'Total Users', value: totalUsers, color: 'bg-green-500' },
+    { name: 'Students', value: totalStudents, color: 'bg-purple-500' },
+    { name: 'Teachers', value: totalTeachers, color: 'bg-orange-500' },
   ];
 
   return (
@@ -72,5 +113,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-

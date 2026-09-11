@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AttendanceService } from '../../../backend/src/attendance/attendance.service';
 import { PrismaService } from '../../../backend/src/common/prisma/prisma.service';
 import { AuditLogService } from '../../../backend/src/audit/audit.service';
-import { AttendanceStatus } from '@prisma/client';
+import { AttendanceStatusValues } from '@school-management/shared-types';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 describe('AttendanceService', () => {
@@ -53,7 +53,7 @@ describe('AttendanceService', () => {
     teacherId: 'teacher-1',
     academicYearId: 'ay-1',
     date: '2024-04-01T00:00:00.000Z',
-    status: AttendanceStatus.PRESENT,
+    status: 'PRESENT',
   };
 
   describe('create', () => {
@@ -169,18 +169,18 @@ describe('AttendanceService', () => {
     it('should throw NotFoundException when record does not exist', async () => {
       prisma.attendance.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('att-1', 'actor-1', { status: AttendanceStatus.ABSENT }, { role: 'SCHOOL_ADMIN', schoolId: 'school-1' })).rejects.toThrow(NotFoundException);
+      await expect(service.update('att-1', 'actor-1', { status: 'ABSENT' }, { role: 'SCHOOL_ADMIN', schoolId: 'school-1' })).rejects.toThrow(NotFoundException);
     });
 
     it('should update and audit the change', async () => {
-      const existing = { id: 'att-1', schoolId: 'school-1', status: AttendanceStatus.PRESENT };
-      const updated = { id: 'att-1', schoolId: 'school-1', status: AttendanceStatus.ABSENT };
+      const existing = { id: 'att-1', schoolId: 'school-1', status: 'PRESENT' };
+      const updated = { id: 'att-1', schoolId: 'school-1', status: 'ABSENT' };
       prisma.attendance.findFirst.mockResolvedValue(existing as any);
       prisma.attendance.update.mockResolvedValue(updated as any);
 
-      const result = await service.update('att-1', 'actor-1', { status: AttendanceStatus.ABSENT }, { role: 'SCHOOL_ADMIN', schoolId: 'school-1' });
+      const result = await service.update('att-1', 'actor-1', { status: 'ABSENT' }, { role: 'SCHOOL_ADMIN', schoolId: 'school-1' });
 
-      expect(prisma.attendance.update).toHaveBeenCalledWith({ where: { id: 'att-1' }, data: { status: AttendanceStatus.ABSENT } });
+      expect(prisma.attendance.update).toHaveBeenCalledWith({ where: { id: 'att-1' }, data: { status: 'ABSENT' } });
       expect(auditLogService.create).toHaveBeenCalledWith(expect.objectContaining({ action: 'UPDATE', resourceType: 'Attendance' }));
       expect(result).toEqual(updated);
     });
@@ -188,7 +188,7 @@ describe('AttendanceService', () => {
 
   describe('remove', () => {
     it('should soft delete and audit the deletion', async () => {
-      const existing = { id: 'att-1', schoolId: 'school-1', status: AttendanceStatus.PRESENT };
+      const existing = { id: 'att-1', schoolId: 'school-1', status: 'PRESENT' };
       const removed = { id: 'att-1', schoolId: 'school-1', deletedAt: new Date() };
       prisma.attendance.findFirst.mockResolvedValue(existing as any);
       prisma.attendance.update.mockResolvedValue(removed as any);
