@@ -24,7 +24,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [requiresRoleSelection, setRequiresRoleSelection] = useState(false);
   const [availableRoles, setAvailableRoles] = useState<string[]>([]);
-  const [pendingLogin, setPendingLogin] = useState<{ user: any; accessToken: string; refreshToken: string } | null>(null);
+  const [pendingLogin, setPendingLogin] = useState<{ email: string; password: string } | null>(null);
 
   const {
     register,
@@ -47,7 +47,7 @@ export default function LoginPage() {
 
       if (requiresRoleSelection && availableRoles) {
         setAvailableRoles(availableRoles);
-        setPendingLogin({ user, accessToken, refreshToken });
+        setPendingLogin({ email: data.email, password: data.password });
         setRequiresRoleSelection(true);
       } else {
         login(user, accessToken, refreshToken);
@@ -62,6 +62,10 @@ export default function LoginPage() {
 
   const onRoleSubmit = async (data: RoleSelection) => {
     try {
+      if (!pendingLogin) {
+        setError('Session expired. Please sign in again.');
+        return;
+      }
       const response = await api.post('/auth/login', { ...pendingLogin, selectedRole: data.selectedRole });
       const { user, accessToken, refreshToken } = response.data;
       login(user, accessToken, refreshToken);
