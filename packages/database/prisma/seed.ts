@@ -89,6 +89,50 @@ async function main() {
     },
   });
 
+  // Create profile records for roles that require them
+  await prisma.schoolAdmin.upsert({
+    where: { userId: schoolAdmin.id },
+    update: {},
+    create: {
+      userId: schoolAdmin.id,
+      employeeId: `EMP-${schoolAdmin.id.slice(-6)}`,
+      designation: 'School Administrator',
+      appointmentDate: new Date(),
+    },
+  });
+
+  await prisma.teacher.upsert({
+    where: { userId: teacher.id },
+    update: {},
+    create: {
+      userId: teacher.id,
+      employeeId: `EMP-${teacher.id.slice(-6)}`,
+      dateOfBirth: new Date('1985-01-15'),
+      gender: 'FEMALE',
+      qualification: 'M.Ed',
+      experience: 10,
+      joiningDate: new Date('2014-06-01'),
+    },
+  });
+
+  await prisma.student.upsert({
+    where: { userId: student.id },
+    update: {},
+    create: {
+      userId: student.id,
+      admissionNumber: `ADM-${student.id.slice(-6)}`,
+      dateOfBirth: new Date('2010-05-20'),
+      gender: 'MALE',
+      bloodGroup: 'O+',
+      address: '123 Student Lane',
+      guardianName: 'Robert Student',
+      guardianPhone: '+1234567890',
+      guardianEmail: 'robert@student.com',
+      guardianRelation: 'Father',
+      enrollmentDate: new Date('2024-04-01'),
+    },
+  });
+
   const academicYear = await prisma.academicYear.upsert({
     where: { id: 'demo-ay-2024' },
     update: {},
@@ -134,7 +178,7 @@ async function main() {
     { name: 'results.view.assigned', description: 'View assigned results', category: 'Results' },
     { name: 'results.view', description: 'View results', category: 'Results' },
     { name: 'results.prepare', description: 'Prepare results', category: 'Results' },
-    { name: 'results.approve', description: 'Approve results', category: 'Results' },
+    { name: 'results.approve', description: 'Approved results', category: 'Results' },
     { name: 'awards.view.own', description: 'View own awards', category: 'Awards' },
     { name: 'awards.approve', description: 'Approve awards', category: 'Awards' },
     { name: 'awards.workflow', description: 'Manage awards workflow', category: 'Awards' },
@@ -176,25 +220,33 @@ async function main() {
     {
       role: 'SCHOOL_ADMIN',
       permissions: [
-        'school.manage', 'users.manage', 'teachers.manage', 'classes.manage',
-        'sections.manage', 'subjects.manage', 'students.manage', 'attendance.manage',
-        'examinations.manage', 'marks.prepare', 'results.prepare', 'awards.workflow',
-        'notifications.routine', 'reports.manage', 'settings.manage', 'files.manage',
+        'school.view', 'school.manage', 'users.view', 'users.manage', 'teachers.view',
+        'teachers.manage', 'classes.view', 'classes.manage', 'sections.view',
+        'sections.manage', 'subjects.view', 'subjects.manage', 'students.view',
+        'students.manage', 'attendance.view', 'attendance.manage',
+        'examinations.view', 'examinations.manage', 'marks.view', 'marks.prepare',
+        'results.view', 'results.prepare', 'awards.view', 'awards.workflow',
+        'notifications.view', 'notifications.routine', 'reports.view', 'reports.manage',
+        'settings.manage', 'files.manage', 'dashboard.view',
       ],
     },
     {
       role: 'TEACHER',
       permissions: [
-        'students.view.assigned', 'attendance.enter.assigned', 'marks.enter.assigned',
-        'examinations.assigned', 'homework.manage.assigned', 'timetable.view.assigned',
-        'notifications.class', 'results.view.assigned',
+        'school.view', 'users.view', 'students.view.assigned', 'attendance.view',
+        'attendance.enter.assigned', 'marks.view', 'marks.enter.assigned',
+        'examinations.view', 'examinations.assigned', 'homework.view',
+        'homework.manage.assigned', 'timetable.view', 'timetable.view.assigned',
+        'notifications.view', 'notifications.class', 'results.view.assigned',
+        'awards.view', 'dashboard.view',
       ],
     },
     {
       role: 'STUDENT',
       permissions: [
-        'dashboard.view', 'attendance.view.own', 'marks.view.own', 'examinations.view.own',
-        'results.view.own', 'awards.view.own', 'homework.view.own', 'timetable.view.own',
+        'school.view', 'users.view', 'dashboard.view', 'attendance.view.own',
+        'marks.view.own', 'examinations.view.own', 'results.view.own',
+        'awards.view.own', 'homework.view.own', 'timetable.view.own',
         'notifications.receive', 'profile.manage',
       ],
     },
