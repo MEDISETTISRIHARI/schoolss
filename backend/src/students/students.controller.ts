@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
+import { CreateStudentWithUserDto } from './dto/create-student-with-user.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { RequirePermissions } from '../common/decorators/roles.decorator';
 import { CurrentUser, CurrentUserId } from '../common/decorators/current-user.decorator';
@@ -28,6 +29,12 @@ export class StudentsController {
   @RequirePermissions('students.manage')
   create(@CurrentUser() user: RequestUser, @Body() createStudentDto: CreateStudentDto) {
     return this.studentsService.create(user.sub, createStudentDto, { role: user.role, schoolId: user.schoolId });
+  }
+
+  @Post('with-user')
+  @RequirePermissions('students.manage')
+  createWithUser(@CurrentUser() user: RequestUser, @Body() createStudentWithUserDto: CreateStudentWithUserDto) {
+    return this.studentsService.createWithUser(user.sub, createStudentWithUserDto, { role: user.role, schoolId: user.schoolId });
   }
 
   @Get()

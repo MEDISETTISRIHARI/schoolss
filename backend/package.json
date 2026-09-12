@@ -26,6 +26,7 @@
     "@nestjs/websockets": "^10.2.0",
     "@prisma/client": "^5.14.0",
     "@school-management/shared-types": "workspace:^",
+    "@prisma/client": "^5.14.0",
     "@sentry/node": "^10.73.0",
     "@types/uuid": "^9.0.0",
     "bcrypt": "^5.1.1",
